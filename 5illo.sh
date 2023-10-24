@@ -1,19 +1,21 @@
 #!/bin/bash
+CONFIG_FILE="./config.cfg"
+LINEAJUGADORES=""
+LINEAESTRATEGIAS=""
+LINEALOGS=""
 
 compruebaConfig() {
-    CONFIG_FILE="./config.cfg"
-
     # Variables
-    LINEAJUGADORES=$(grep "JUGADORES=" "$CONFIG_FILE" | cut -d "=" -f 2)
-    LINEAESTRATEGIAS=$(grep "ESTRATEGIA=" "$CONFIG_FILE" | cut -d "=" -f 2)
-    LINEALOGS=$(grep "LOG=" "$CONFIG_FILE" | cut -d "=" -f 2)
-
-
-    if [ ! -f "./config.cfg" ]
+    
+    if [ ! -f "$CONFIG_FILE" ]
     then
         echo "No existe el fichero de configuración"
         exit 1
     fi
+
+    LINEAJUGADORES=$(grep "JUGADORES=" "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEAESTRATEGIAS=$(grep "ESTRATEGIA=" "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEALOGS=$(grep "LOG=" "$CONFIG_FILE" | cut -d "=" -f 2)
 
     if [ -z $LINEAJUGADORES ]
     then
@@ -49,6 +51,72 @@ compruebaConfig() {
     fi
 }
 
+configurarJugadores(){
+
+    // Función que permite configurar el número de jugadores del archivo de configuración
+
+    # Variables
+    jugadores=""
+    jugadoresValidos=""
+
+    # Pedimos el número de jugadores
+    read -p "Introduzca el número de jugadores (1-4): " jugadores
+
+    # Comprobamos que el número de jugadores sea válido
+    if [ $jugadores -lt 1 ] || [ $jugadores -gt 4 ]
+    then
+        echo "El número de jugadores no es válido"
+        configurarJugadores
+    fi
+
+    # Cambiamos el valor de la variable JUGADORES en el archivo de configuración
+    sed -i "s/JUGADORES=$LINEAJUGADORES/JUGADORES=$jugadores/g" "$CONFIG_FILE"    
+
+}
+
+opcionConfiguracion(){
+
+    # Mostrar por pantalla un menú en el que se presente qué parámetros se pueden configurar
+
+    opcion=""
+
+    while true;
+    do
+        clear
+        echo "A)CONFIGURAR JUGADORES"
+        echo "B)CONFIGURAR ESTRATEGIAS"
+        echo "C)CONFIGURAR LOGS"
+        echo "S)SALIR"
+        echo "“5illo”. Introduzca una opción >>"
+        read opcion
+        case $opcion in
+            A|a)
+                echo "CONFIGURAR JUGADORES"
+                configurarJugadores
+                ;;
+            B|b)
+                echo "CONFIGURAR ESTRATEGIAS"
+                ;;
+            C|c)
+                echo "CONFIGURAR LOGS"
+                ;;
+            S|s)
+                echo "SALIR"
+                main
+                
+                ;;
+            *)
+                echo "Opcion incorrecta"
+                ;;
+        esac
+        read -p "Pulse INTRO para continuar..."
+    done
+
+
+
+
+}
+
 main() {
 
     # Comprobamos que el fichero de configuración sea válido
@@ -71,6 +139,7 @@ main() {
         case $opcion in
             C|c)
                 echo "CONFIGURACION"
+                opcionConfiguracion
                 ;;
             J|j)
                 echo "JUGAR"
