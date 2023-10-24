@@ -1,11 +1,13 @@
 #!/bin/bash
 
 compruebaConfig() {
+    CONFIG_FILE="./config.cfg"
 
     # Variables
-    LINEAJUGADORES=$(grep "JUGADORES=" | cut -d "=" -f 2 ./config.cfg)
-    LINEAESTRATEGIAS=$(grep "ESTRATEGIAS=" | cut -d "=" -f 2 ./config.cfg)
-    LINEALOGS=$(grep "LOG=" | cut -d "=" -f 2 ./config.cfg)
+    LINEAJUGADORES=$(grep "JUGADORES=" "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEAESTRATEGIAS=$(grep "ESTRATEGIA=" "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEALOGS=$(grep "LOG=" "$CONFIG_FILE" | cut -d "=" -f 2)
+
 
     if [ ! -f "./config.cfg" ]
     then
@@ -50,7 +52,7 @@ compruebaConfig() {
 main() {
 
     # Comprobamos que el fichero de configuración sea válido
-    compruebaConfig;
+    compruebaConfig
 
     # Variables
     opcion=""
@@ -106,5 +108,3 @@ elif [ $1 != -g ]
 then
     echo "El primer parámetro es inválido"
 fi
-
-main()
