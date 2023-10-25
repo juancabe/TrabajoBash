@@ -74,6 +74,53 @@ configurarJugadores(){
 
 }
 
+configurarLogs(){
+    # Funcion para cambiar la ruta del archivo de logs en CONFIG_FILE
+
+    # Variables
+    rutaLogs=""
+
+    # Pedimos la ruta del archivo de logs
+    read -p "Introduzca la ruta del archivo de logs: " rutaLogs
+
+    # Comprobamos que la ruta sea válida
+    if [ ! -f $rutaLogs ]
+    then
+        echo "La ruta no es válida"
+        configurarLogs
+    fi
+
+    #Añadimos \ a los / para que sed no de error
+    rutaLogs=$(echo $rutaLogs | sed 's/\//\\\//g')  #Error no solucionado
+
+    # Cambiamos el valor de la variable LOG en el archivo de configuración
+    sed "s/LOG=$LINEALOGS/LOG=$rutaLogs/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
+    
+}
+
+configurarEstrategias(){
+
+    # Funcion para cambiar la estrategia de los jugadores en CONFIG_FILE
+
+    # Variables
+    estrategia=""
+    estrategiaValida=""
+
+    # Pedimos la estrategia de los jugadores
+    read -p "Introduzca la estrategia de los jugadores (0-2): " estrategia
+
+    # Comprobamos que la estrategia sea válida
+    if [ $estrategia -lt 0 ] || [ $estrategia -gt 2 ]
+    then
+        echo "La estrategia no es válida"
+        configurarEstrategias
+    fi
+
+    # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuración
+    sed "s/ESTRATEGIA=$LINEAESTRATEGIAS/ESTRATEGIA=$estrategia/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
+
+}
+
 opcionConfiguracion(){
 
     # Mostrar por pantalla un menú en el que se presente qué parámetros se pueden configurar
@@ -96,14 +143,15 @@ opcionConfiguracion(){
                 ;;
             B|b)
                 echo "CONFIGURAR ESTRATEGIAS"
+                configurarEstrategias
                 ;;
             C|c)
                 echo "CONFIGURAR LOGS"
+                configurarLogs
                 ;;
             S|s)
                 echo "SALIR"
                 main
-                
                 ;;
             *)
                 echo "Opcion incorrecta"
