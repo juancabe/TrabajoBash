@@ -205,9 +205,13 @@ bucleJugar(){
 
     # Variables
     HA_GANADO=0
+    JUGADOR_INICIO=0
+
+    colocarCincoOrosInicio
+    JUGADOR_INICIO=$?
 
     while [ $HA_GANADO -eq 0 ]; do
-        for ((i = 0; i < LINEAJUGADORES; i++)); do
+        for ((i = JUGADOR_INICIO; i < LINEAJUGADORES && HA_GANADO -eq 0 ; i++)); do 
             case $LINEAESTRATEGIAS in
                 0)
                     estrategia0 i
@@ -227,11 +231,63 @@ bucleJugar(){
 
 }
 
+colocarCincoOrosInicio(){
+
+    #Función que hace que el jugador que tenga el 5 de oros empiece la partida, la función devuelve el ID del jugador que empieza
+
+    # Variables
+    JUGADOR_ID=0
+
+    # Cadena a buscar
+    CARTA_BUSCADA="5 Oros"
+
+    # Bucle para buscar la carta en los mazos de los jugadores
+    for ((i = 0; i < ${#JUGADORES[@]}; i++)); do
+        if [[ ${JUGADORES[i]} == *$CARTA_BUSCADA* ]]; then
+            JUGADOR_ID=$i
+            break
+        fi
+    done
+
+    # Eliminar la carta del jugador que empieza
+
+    JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA_BUSCADA//g")
+
+    # Colocar la carta en la mesa
+
+    MESA[0] = $CARTA_BUSCADA
+
+    # Mostrar la carta en la mesa
+
+    echo "La carta en la mesa es: ${MESA[0]}"
+
+    # Devolver el ID del jugador que empieza
+
+    return $JUGADOR_ID
+}
+
+sePuedeColocar(){
+
+    CARTA_JUGADOR=$1
+
+    # Comprobamos si se puede colocar la carta en la mesa
+
+    # Variables
+    
+
+
+}
+
 estrategia0(){
 
-    # Función que contiene la estrategia 0
+    # Función que contiene la estrategia 0, la aleatoria
 
-    echo "Estrategia 0"
+    #Variables
+    JUGADOR_ID=$1
+    HA_GANADO=0
+    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
+
+    # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
     
 }
 
@@ -239,16 +295,24 @@ estrategia1(){
 
     # Función que contiene la estrategia 1
 
-    echo "Estrategia 1"
+    #Variables
+    JUGADOR_ID=$1
+    HA_GANADO=0
+    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
 
+    
 }
 
 estrategia2(){
 
     # Función que contiene la estrategia 2
 
-    echo "Estrategia 2"
+    #Variables
+    JUGADOR_ID=$1
+    HA_GANADO=0
+    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
 
+    
 }
 
 repartirCartasJugadores(){
