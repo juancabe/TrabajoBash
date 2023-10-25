@@ -71,7 +71,7 @@ configurarJugadores(){
 
     # Cambiamos el valor de la variable JUGADORES en el archivo de configuración
     sed "s/JUGADORES=$LINEAJUGADORES/JUGADORES=$jugadores/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
-
+    LINEAJUGADORES=$jugadores
 }
 
 configurarLogs(){
@@ -90,12 +90,13 @@ configurarLogs(){
         configurarLogs
     fi
 
-    #Añadimos \ a los / para que sed no de error
-    rutaLogs=$(echo $rutaLogs | sed 's/\//\\\//g')  #Error no solucionado
+    #Añadimos \ a las rutas / para que sed no de error
+    rutaLogs=$(echo $rutaLogs | sed 's/\//\\\//g')  
+    LINEALOGS=$(echo $LINEALOGS | sed 's/\//\\\//g') 
 
     # Cambiamos el valor de la variable LOG en el archivo de configuración
     sed "s/LOG=$LINEALOGS/LOG=$rutaLogs/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
-    
+    LINEALOGS=$rutaLogs
 }
 
 configurarEstrategias(){
@@ -116,8 +117,9 @@ configurarEstrategias(){
         configurarEstrategias
     fi
 
-    # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuració
+    # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuración
     sed "s/ESTRATEGIA=$LINEAESTRATEGIAS/ESTRATEGIA=$estrategia/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
+    LINEAESTRATEGIAS=$estrategia
 
 }
 
