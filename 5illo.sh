@@ -13,9 +13,9 @@ compruebaConfig() {
         exit 1
     fi
 
-    LINEAJUGADORES=$(grep "JUGADORES=" "$CONFIG_FILE" | cut -d "=" -f 2)
-    LINEAESTRATEGIAS=$(grep "ESTRATEGIA=" "$CONFIG_FILE" | cut -d "=" -f 2)
-    LINEALOGS=$(grep "LOG=" "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEAJUGADORES=$(grep "JUGADORES=" < "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEAESTRATEGIAS=$(grep "ESTRATEGIA=" < "$CONFIG_FILE" | cut -d "=" -f 2)
+    LINEALOGS=$(grep "LOG=" < "$CONFIG_FILE" | cut -d "=" -f 2)
 
     if [ -z $LINEAJUGADORES ]
     then
@@ -53,7 +53,7 @@ compruebaConfig() {
 
 configurarJugadores(){
 
-    // Función que permite configurar el número de jugadores del archivo de configuración
+    # Función que permite configurar el número de jugadores del archivo de configuración
 
     # Variables
     jugadores=""
@@ -70,7 +70,7 @@ configurarJugadores(){
     fi
 
     # Cambiamos el valor de la variable JUGADORES en el archivo de configuración
-    sed -i "s/JUGADORES=$LINEAJUGADORES/JUGADORES=$jugadores/g" "$CONFIG_FILE"    
+    sed "s/JUGADORES=$LINEAJUGADORES/JUGADORES=$jugadores/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
 
 }
 
