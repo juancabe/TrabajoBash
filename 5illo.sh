@@ -8,6 +8,7 @@ LINEAJUGADORES=""
 LINEAESTRATEGIAS=""
 LINEALOGS=""
 BARAJA=()
+JUGADORES=()
 
 #############################
 #                           #
@@ -194,11 +195,43 @@ jugarPrincipal(){
     
 
     crearBaraja
+    repartirCartasJugadores
+
+
+}
+
+repartirCartasJugadores(){
+
+    # Función que reparte las cartas a los JUGADORES
+
+    JUGADORES=() 
+
+    for ((i = 0; i < LINEAJUGADORES; i++)); do
+        JUGADORES[i]="" # Inicializar el array de cada jugador
+    done
+
+    # Repartir las cartas a los JUGADORES
+    CONTADOR=0
+
+    for CARTA in "${BARAJA[@]}"; do
+        JUGADOR_ID=$((CONTADOR % LINEAJUGADORES))
+        JUGADORES[JUGADOR_ID]+="$CARTA|"
+        ((CONTADOR++))
+    done
+
+    # Mostrar las cartas repartidas a cada jugador
+    for ((i = 0; i < LINEAJUGADORES; i++)); do
+        echo "Jugador $((i+1)): ${JUGADORES[i]}"
+    done
 
 
 }
 
 crearBaraja(){
+
+    # Función que crea la baraja
+
+    BARAJA=()
 
     # Definir los PALOS y las cartas
     PALOS=("Copas" "Oros" "Espadas" "Bastos")
@@ -226,6 +259,11 @@ crearBaraja(){
         # Intercambiamos la carta aleatoria con la carta actual
         BARAJA[$NUMERO_ALEATORIO]=${BARAJA[$i]}
         BARAJA[$i]=$CARTA_TEMPORAL
+    done
+
+    # Mostramos la baraja
+    for (( i=0; i<$NUMERO_CARTAS; i++ )); do
+        echo ${BARAJA[$i]}
     done
 
 }
