@@ -4,6 +4,12 @@ LINEAJUGADORES=""
 LINEAESTRATEGIAS=""
 LINEALOGS=""
 
+#############################
+#                           #
+#      FUNCIONES MAIN       #
+#                           #
+#############################
+
 compruebaConfig() {
     # Variables
     
@@ -50,6 +56,11 @@ compruebaConfig() {
         exit 1
     fi
 }
+#############################
+#                           #
+# FUNCIONES CONFIGURACION   #
+#                           #
+#############################
 
 configurarJugadores(){
 
@@ -167,11 +178,17 @@ opcionConfiguracion(){
 
 }
 
+#############################
+#                           #
+#      FUNCIONES JUGAR      #
+#                           #
+#############################
+
 jugarPrincipal(){
 
     
 
-
+    echo "Jugar Principal"
 
 
 }
@@ -202,6 +219,7 @@ main() {
                 ;;
             J|j)
                 echo "JUGAR"
+                jugarPrincipal
                 ;;
             E|e)
                 echo "ESTADISTICAS"
