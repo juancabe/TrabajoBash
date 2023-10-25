@@ -1,8 +1,13 @@
 #!/bin/bash
+
+
+#Variables globales
+
 CONFIG_FILE="./config.cfg"
 LINEAJUGADORES=""
 LINEAESTRATEGIAS=""
 LINEALOGS=""
+BARAJA=()
 
 #############################
 #                           #
@@ -188,8 +193,40 @@ jugarPrincipal(){
 
     
 
-    echo "Jugar Principal"
+    crearBaraja
 
+
+}
+
+crearBaraja(){
+
+    # Definir los PALOS y las cartas
+    PALOS=("Copas" "Oros" "Espadas" "Bastos")
+    CARTAS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")    
+
+    # Llenar la BARAJA con las CARTAS   
+    for PALO in "${PALOS[@]}"; do
+        for CARTA in "${CARTAS[@]}"; do
+            BARAJA+=("$CARTA $PALO")
+        done
+    done
+
+    # Barajar la BARAJA
+
+    # Variables
+    NUMERO_CARTAS=${#BARAJA[@]}
+    CARTA_TEMPORAL=""
+
+    # Barajamos la baraja
+    for (( i=0; i<$NUMERO_CARTAS; i++ )); do
+        # Generamos un número aleatorio entre 0 y el número de cartas
+        NUMERO_ALEATORIO=$(( $RANDOM % $NUMERO_CARTAS ))
+        # Guardamos la carta en una variable temporal
+        CARTA_TEMPORAL=${BARAJA[$NUMERO_ALEATORIO]}
+        # Intercambiamos la carta aleatoria con la carta actual
+        BARAJA[$NUMERO_ALEATORIO]=${BARAJA[$i]}
+        BARAJA[$i]=$CARTA_TEMPORAL
+    done
 
 }
 
