@@ -9,6 +9,7 @@ LINEAESTRATEGIAS=""
 LINEALOGS=""
 BARAJA=()
 JUGADORES=()
+MESA=()
 
 #############################
 #                           #
@@ -192,11 +193,61 @@ opcionConfiguracion(){
 
 jugarPrincipal(){
 
-    
-
     crearBaraja
     repartirCartasJugadores
+    bucleJugar
 
+}
+
+bucleJugar(){
+
+    # Función que contiene el bucle de la lógica de juego
+
+    # Variables
+    HA_GANADO=0
+
+    while [ $HA_GANADO -eq 0 ]; do
+        for ((i = 0; i < LINEAJUGADORES; i++)); do
+            case $LINEAESTRATEGIAS in
+                0)
+                    estrategia0 i
+                    HA_GANADO=$?
+                    ;;
+                1)
+                    estrategia1 i
+                    HA_GANADO=$?
+                    ;;
+                2)
+                    estrategia2 i
+                    HA_GANADO=$?
+                    ;;
+            esac
+        done
+    done
+
+}
+
+estrategia0(){
+
+    # Función que contiene la estrategia 0
+
+    echo "Estrategia 0"
+    
+}
+
+estrategia1(){
+
+    # Función que contiene la estrategia 1
+
+    echo "Estrategia 1"
+
+}
+
+estrategia2(){
+
+    # Función que contiene la estrategia 2
+
+    echo "Estrategia 2"
 
 }
 
@@ -261,12 +312,14 @@ crearBaraja(){
         BARAJA[$i]=$CARTA_TEMPORAL
     done
 
-    # Mostramos la baraja
-    for (( i=0; i<$NUMERO_CARTAS; i++ )); do
-        echo ${BARAJA[$i]}
-    done
-
 }
+
+#############################
+#                           #
+#            MAIN           #
+#                           #
+#############################
+
 
 main() {
 
@@ -313,6 +366,12 @@ main() {
         read -p "Pulse INTRO para continuar..."
     done
 }
+
+#############################
+#                           #
+#           INIT            #
+#                           #
+#############################
 
 if [ ! -z $2 ]
 then
