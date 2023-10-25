@@ -167,6 +167,15 @@ opcionConfiguracion(){
 
 }
 
+jugarPrincipal(){
+
+    
+
+
+
+
+}
+
 main() {
 
     # Comprobamos que el fichero de configuración sea válido
