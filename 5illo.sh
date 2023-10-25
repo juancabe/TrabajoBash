@@ -116,7 +116,7 @@ configurarEstrategias(){
         configurarEstrategias
     fi
 
-    # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuración
+    # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuració
     sed "s/ESTRATEGIA=$LINEAESTRATEGIAS/ESTRATEGIA=$estrategia/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
 
 }
