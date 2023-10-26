@@ -187,11 +187,11 @@ opcionConfiguracion(){
 
 }
 
-#############################
-#                           #
-#      FUNCIONES JUGAR      #
-#                           #
-#############################
+#############################                             de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|5 Oros|6 Oros|7 Oros|8 Oros|9 Oros|10 Oros"
+#                           #   Para i elementos en MESA: MESA["Oros"] = {Cartas de oros},          
+#      FUNCIONES JUGAR      #                             MESA["Copas"] = {Cartas de copas}, 
+#                           #                             MESA["Espadas"] = {Cartas de espadas}, 
+#############################                             MESA["Bastos"] = {Cartas de bastos}
 
 jugarPrincipal(){
 
@@ -211,6 +211,10 @@ bucleJugar(){
 
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?
+    mostrarMesa
+    mostrarJugadores
+
+    return 0
 
     while [ $HA_GANADO -eq 0 ]; do
         for ((i = JUGADOR_INICIO; i < LINEAJUGADORES && HA_GANADO -eq 0 ; i++)); do 
@@ -233,6 +237,19 @@ bucleJugar(){
 
 }
 
+mostrarMesa(){
+    
+        # Función que muestra la mesa por pantalla
+    
+        # Variables
+        CARTAS_PALO=()
+    
+        # Mostramos la mesa por pantalla
+        for PALO in "${PALOS[@]}"; do
+            echo "$PALO: ${MESA[$PALO]}"
+        done
+}
+
 colocarCincoOrosInicio(){
 
     #Función que hace que el jugador que tenga el 5 de oros empiece la partida, la función devuelve el ID del jugador que empieza
@@ -253,19 +270,86 @@ colocarCincoOrosInicio(){
 
     # Eliminar la carta del jugador que empieza
 
-    JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA_BUSCADA//g")
+    JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA_BUSCADA|//g")
 
     # Colocar la carta en la mesa
 
-    MESA[0] = $CARTA_BUSCADA
-
-    # Mostrar la carta en la mesa
-
-    echo "La carta en la mesa es: ${MESA[0]}"
+    colocarCarta $CARTA_BUSCADA
+    eliminarCartaDeJugador $JUGADOR_ID $CARTA_BUSCADA
 
     # Devolver el ID del jugador que empieza
+    # Hay que ver si somos el último jugador, en ese caso el jugador que empieza es el jugador 0
+
+    if [ $JUGADOR_ID -eq $((LINEAJUGADORES-1)) ]; then
+        echo 0
+    else
+        echo $((JUGADOR_ID+1))
+    fi
 
     return $JUGADOR_ID
+    
+}
+
+colocarCarta(){
+    
+    # Funcion que coloca una carta en la mesa
+
+    # Variables
+    CARTA=$1
+    PALO=${CARTA##* } # Extraemos el palo de la carta, el comando ##* elimina todo lo que hay antes de un espacio
+    NUMERO=${CARTA%% *} # Extraemos el número de la carta, el comando %% elimina todo lo que hay después de un espacio
+
+    # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente, para ello primero hay que ver que cartas hay colocadas en el palo
+
+    # Comprobamos si hay cartas en el palo
+    if [ -z ${MESA[$PALO]} ]; then
+        # Si no hay cartas en el palo, colocamos la carta en la primera posición
+        MESA[$PALO]=$CARTA
+    else
+        # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
+        # Variables
+        CARTAS_PALO=${MESA[$PALO]} # Obtenemos las cartas del palo
+        CARTAS_PALO=(${CARTAS_PALO//|/ }) # Separamos las cartas del palo en un array
+        COLOCADA=0 # Variable que indica si la carta ha sido colocada
+        POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
+
+        # Bucle para colocar la carta en la posición correspondiente
+        for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
+            # Obtenemos el número de la carta
+            NUMERO_CARTA=${CARTAS_PALO[i]%% *}
+            # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
+            if [ $NUMERO_CARTA -gt $NUMERO ]; then
+                # Si el número de la carta es mayor, colocamos la carta en la posición anterior
+                POSICION=$((i-1))
+                COLOCADA=1
+                break
+            fi
+        done
+
+        # Comprobamos si la carta ha sido colocada
+        if [ $COLOCADA -eq 0 ]; then
+            # Si la carta no ha sido colocada, la colocamos en la última posición
+            POSICION=$((i-1))
+        fi
+
+        # Colocamos la carta en la posición correspondiente
+        MESA[$PALO]=$(echo ${MESA[$PALO]} | sed "s/$CARTA/|/g") # Primero eliminamos la carta de la mesa (no sé si hace falta)
+        MESA[$PALO]=$(echo ${MESA[$PALO]} | sed "s/|/ $CARTA/g") # Después la colocamos en la posición correspondiente
+        
+    fi
+}
+
+eliminarCartaDeJugador(){
+
+    # Función que elimina una carta del mazo de un jugador
+
+    # Variables
+    JUGADOR_ID=$1
+    CARTA=$2
+
+    # Eliminamos la carta del mazo del jugador
+    JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA//g")
+
 }
 
 sePuedeColocar(){
@@ -336,12 +420,18 @@ repartirCartasJugadores(){
         ((CONTADOR++))
     done
 
-    # Mostrar las cartas repartidas a cada jugador
+    mostrarJugadores
+
+
+}
+
+mostrarJugadores(){
+    
+    # Función que muestra los jugadores por pantalla
+
     for ((i = 0; i < LINEAJUGADORES; i++)); do
         echo "Jugador $((i+1)): ${JUGADORES[i]}"
     done
-
-
 }
 
 crearBaraja(){
