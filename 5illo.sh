@@ -114,6 +114,8 @@ configurarLogs(){
 
     # Cambiamos el valor de la variable LOG en el archivo de configuración
     sed "s/LOG=$LINEALOGS/LOG=$rutaLogs/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
+    # Eliminamos los \ de la ruta para que se muestre correctamente
+    rutaLogs=$(echo $rutaLogs | sed 's/\\\//\//g')
     LINEALOGS=$rutaLogs
 }
 
