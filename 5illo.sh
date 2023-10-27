@@ -223,6 +223,12 @@ bucleJugar(){
 
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?    
+    
+    CARTA_PRUEBA="4 Oros"
+    sePuedeColocar $CARTA_PRUEBA
+    echo $?
+
+    return 0
 
     while [ $HA_GANADO -eq 0 ]; do
         for ((i = JUGADOR_INICIO; i < LINEAJUGADORES && HA_GANADO -eq 0 ; i++)); do 
@@ -252,6 +258,9 @@ jugarIterativo(){
 
     # Función que contiene la lógica de juego del jugador iterativo
 
+    CARTAS_JUGADOR=${JUGADOR[0]} # Obtenemos las cartas del Jugador
+    CARTAS_PALO_ARRAY=()
+        IFS='|' read -r -a CARTAS_PALO_ARRAY <<< "$CARTAS_PALO"
 
 
 
@@ -299,6 +308,7 @@ colocarCincoOrosInicio(){
     colocarCarta $CARTA_BUSCADA
     eliminarCartaDeJugador $JUGADOR_ID $CARTA_BUSCADA
 
+
     # Devolver el ID del jugador que empieza
     # Hay que ver si somos el último jugador, en ese caso el jugador que empieza es el jugador 0
 
@@ -331,21 +341,21 @@ colocarCarta(){
     else
         # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
-        CARTAS_PALO_ARRAY=${MESA[PALO]} # Obtenemos las cartas del palo
-        CARTAS_PALO=()
-        IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
+        CARTAS_PALO=${MESA[PALO]} # Obtenemos las cartas del palo
+        CARTAS_PALO_ARRAY=()
+        IFS='|' read -r -a CARTAS_PALO_ARRAY <<< "$CARTAS_PALO"
         COLOCADA=0 # Variable que indica si la carta ha sido colocada
         POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
 
 
         # Bucle para colocar la carta en la posición correspondiente
-        for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
+        for ((i = 0; i < ${#CARTAS_PALO_ARRAY[@]}; i++)); do
             # Obtenemos el número de la carta
-            NUMERO_CARTA=${CARTAS_PALO[i]%% *}
+            NUMERO_CARTA=${CARTAS_PALO_ARRAY[i]%% *}
             # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
             if [ $NUMERO_CARTA -gt "$NUMERO" ]; then
-                # Si el número de la carta es mayor, colocamos la carta en la primera posición del array CARTAS_PALO
-                CARTAS_PALO=("$CARTA $PALO" "${CARTAS_PALO[@]}")
+                # Si el número de la carta es mayor, colocamos la carta en la primera posición del array CARTAS_PALO_ARRAY
+                CARTAS_PALO_ARRAY=("$CARTA $PALO" "${CARTAS_PALO_ARRAY[@]}")
                 COLOCADA=1
                 break
             fi
@@ -354,11 +364,11 @@ colocarCarta(){
         # Comprobamos si la carta ha sido colocada
         if [ $COLOCADA -eq 0 ]; then
             # Si la carta no ha sido colocada, la colocamos en la última posición
-            CARTAS_PALO+=("$CARTA $PALO")
+            CARTAS_PALO_ARRAY+=("$CARTA $PALO")
         fi
 
-        # Pasamos el array CARTAS_PALO a un string de la forma "4 Oros|5 Oros|6 Oros|"
-        MESA[PALO]=$(printf "%s|" "${CARTAS_PALO[@]}")
+        # Pasamos el array CARTAS_PALO_ARRAY a un string de la forma "4 Oros|5 Oros|6 Oros|"
+        MESA[PALO]=$(printf "%s|" "${CARTAS_PALO_ARRAY[@]}")
 
         mostrarMesa
         
@@ -382,7 +392,8 @@ eliminarCartaDeJugador(){
 sePuedeColocar(){
 
     NUMERO=$1
-    PALO=$2
+    PALOENTRADA=$2
+
 
     # Comprobamos si el numero es 5
 
@@ -390,19 +401,31 @@ sePuedeColocar(){
         return 0
     fi
 
-    LENGTH=${#MESA[PALO]}
-    if [ $LENGTH -eq 0 ]; then
+    HAYCARTA=${#MESA[PALOENTRADA]}
+    if [ $HAYCARTA -eq 0 ]; then
         return 1
     else
-        CARTAS_PALO_ARRAY=${MESA[PALO]} # Obtenemos las cartas del palo
+        CARTAS_PALO_ARRAY=${MESA[PALOENTRADA]} # Obtenemos las cartas del palo
         CARTAS_PALO=()
         IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
 
-        # If que comprueba si NUMERO es mayor que 5, na mas
+        # Hay que transformar el array CARTAS_PALO EN UN ARRAY DE NUMEROS, es decir, quitando a "5 Oros" el "Oros" y quedándonos con el 5
+
+        for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
+            # Obtenemos el número de la carta
+            NUMERO_CARTA=${CARTAS_PALO[i]%% *}
+            CARTAS_PALO[i]=$NUMERO_CARTA
+        done
+
+
+        #Creamos variable LENGTH para saber el número de elementos en CARTAS_PALO_ARRAY
+
+        LENGTH=${#CARTAS_PALO[@]}
 
         if [ $NUMERO -gt 5 ]; then
             # If que comprueba si el numero es una unidad mayor que el numero de la última carta del palo
-            if [ $NUMERO -eq $((CARTAS_PALO[-1] + 1)) ]; then
+            
+            if [ $NUMERO -eq $((${CARTAS_PALO[$((LENGTH-1))]} + 1)) ]; then
                 return 0
             else
                 return 1
@@ -423,6 +446,9 @@ sePuedeColocar(){
         fi
 
     fi
+
+    echo "Función sePuedeColocar: Error inesperado"
+    return -1
 
 }
 
