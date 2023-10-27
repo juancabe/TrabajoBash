@@ -57,8 +57,8 @@ compruebaConfig() {
         exit 1
     fi
 
-    # Comprobamos que LINEAJUGADORES esté entre 1 y 4, LINEAESTRATEGIAS entre 0 y 2 y LINEALOGS sea una ruta relativa a un archivo valida
-    if [ $LINEAJUGADORES -lt 1 ] || [ $LINEAJUGADORES -gt 4 ]
+    # Comprobamos que LINEAJUGADORES esté entre 2 y 4, LINEAESTRATEGIAS entre 0 y 2 y LINEALOGS sea una ruta relativa a un archivo valida
+    if [ $LINEAJUGADORES -lt 2 ] || [ $LINEAJUGADORES -gt 4 ]
     then
         echo "El valor de JUGADORES no es válido"
         exit 1
@@ -89,10 +89,10 @@ configurarJugadores(){
     jugadoresValidos=""
 
     # Pedimos el número de jugadores
-    read -p "Introduzca el número de jugadores (1-4): " jugadores
+    read -p "Introduzca el número de jugadores (2-4): " jugadores
 
     # Comprobamos que el número de jugadores sea válido
-    if [ $jugadores -lt 1 ] || [ $jugadores -gt 4 ]
+    if [ $jugadores -lt 2 ] || [ $jugadores -gt 4 ]
     then
         echo "El número de jugadores no es válido"
         configurarJugadores
@@ -198,7 +198,7 @@ opcionConfiguracion(){
 
 }
 
-#############################                             de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|5 Oros|6 Oros|7 Oros|8 Oros|9 Oros|10 Oros|"
+#############################  de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|"
 #                           #   Para i elementos en MESA: MESA[Oros] = {Cartas de oros},
 #      FUNCIONES JUGAR      #                             MESA[Copas] = {Cartas de copas}, 
 #                           #                             MESA[Espadas] = {Cartas de espadas}, 
@@ -222,8 +222,7 @@ bucleJugar(){
     JUGADOR_INICIO=0
 
     colocarCincoOrosInicio
-    JUGADOR_INICIO=$?
-    
+    JUGADOR_INICIO=$?    
 
     return 0
 
@@ -293,9 +292,9 @@ colocarCincoOrosInicio(){
     # Hay que ver si somos el último jugador, en ese caso el jugador que empieza es el jugador 0
 
     if [ $JUGADOR_ID -eq $((LINEAJUGADORES-1)) ]; then
-        echo 0
+        JUGADOR_ID=0
     else
-        echo $((JUGADOR_ID+1))
+        JUGADOR_ID=$((JUGADOR_ID+1))
     fi
 
     return $JUGADOR_ID
@@ -309,39 +308,34 @@ colocarCarta(){
     # Variables
     CARTA=$1
     PALO=$2
+    NUMERO=$CARTA
 
-    # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente, para ello primero hay que ver que cartas hay colocadas en el palo
-
+    # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente
     # Comprobamos si hay cartas en el palo
-    if [ -z ${MESA[PALO]} ]; then
+    LENGTH=${#MESA[PALO]}
+    if [ $LENGTH -eq 0 ]; then
         # Si no hay cartas en el palo, colocamos la carta en la primera posición
-        echo "La carta es $CARTA y el palo es $PALO"
-        MESA[PALO]="$CARTA $PALO"
+        MESA[PALO]="$CARTA $PALO|"
         mostrarMesa
     else
         # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
         CARTAS_PALO_ARRAY=${MESA[PALO]} # Obtenemos las cartas del palo
+        CARTAS_PALO=()
         IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
         COLOCADA=0 # Variable que indica si la carta ha sido colocada
         POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
 
-        #bucle que imprime las cartas del palo
-
-        for CARTA_PALO in "${CARTAS_PALO[@]}"; do
-            echo "$CARTA_PALO"
-        done
 
         # Bucle para colocar la carta en la posición correspondiente
         for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
             # Obtenemos el número de la carta
             NUMERO_CARTA=${CARTAS_PALO[i]%% *}
             # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
-            if [ $NUMERO_CARTA -gt $NUMERO ]; then
-                # Si el número de la carta es mayor, colocamos la carta en la posición anterior
-                POSICION=$((i-1))
+            if [ $NUMERO_CARTA -gt "$NUMERO" ]; then
+                # Si el número de la carta es mayor, colocamos la carta en la primera posición del array CARTAS_PALO
+                CARTAS_PALO=("$CARTA $PALO" "${CARTAS_PALO[@]}")
                 COLOCADA=1
-                echo "La posición es $POSICION"
                 break
             fi
         done
@@ -349,12 +343,13 @@ colocarCarta(){
         # Comprobamos si la carta ha sido colocada
         if [ $COLOCADA -eq 0 ]; then
             # Si la carta no ha sido colocada, la colocamos en la última posición
-            POSICION=$((i-1))
+            CARTAS_PALO+=("$CARTA $PALO")
         fi
 
-        # Colocamos la carta en la posición correspondiente
-        MESA[PALO]=$(echo ${MESA[PALO]} | sed "s/$CARTA/|/g") # Primero eliminamos la carta de la mesa (no sé si hace falta)
-        MESA[PALO]=$(echo ${MESA[PALO]} | sed "s/|/ $CARTA/g") # Después la colocamos en la posición correspondiente
+        # Pasamos el array CARTAS_PALO a un string de la forma "4 Oros|5 Oros|6 Oros|"
+        MESA[PALO]=$(printf "%s|" "${CARTAS_PALO[@]}")
+
+        mostrarMesa
         
     fi
 }
