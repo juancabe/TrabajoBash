@@ -222,11 +222,8 @@ bucleJugar(){
     JUGADOR_INICIO=0
 
     colocarCincoOrosInicio
-    JUGADOR_INICIO=$?    
-    
-    CARTA_PRUEBA="4 Oros"
-    sePuedeColocar $CARTA_PRUEBA
-    echo $?
+    JUGADOR_INICIO=$?   
+    jugarIterativo 
 
     return 0
 
@@ -258,11 +255,46 @@ jugarIterativo(){
 
     # Función que contiene la lógica de juego del jugador iterativo
 
-    CARTAS_JUGADOR=${JUGADOR[0]} # Obtenemos las cartas del Jugador
-    CARTAS_PALO_ARRAY=()
-        IFS='|' read -r -a CARTAS_PALO_ARRAY <<< "$CARTAS_PALO"
+    CARTAS_JUGADOR=${JUGADORES[0]} # Obtenemos las cartas del Jugador
+    echo "CARTAS_JUGADOR es $CARTAS_JUGADOR"
+    CARTAS_JUGADOR_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+    BIENCOLOCADA=0 # Variable que indica si la carta ha sido colocada
 
+    echo "El len de CARTAS_JUGADOR_ARRAY es ${#CARTAS_JUGADOR_ARRAY[@]}"
 
+    # UN BUCLE Do while(BIENCOLOCADA -eq 0) que imprime 10 unos y espera a que el usuario introduzca un número
+
+    while [ $BIENCOLOCADA -eq 0 ]; do
+        # Bucle for para mostrar todas las cartas del jugador
+
+        for ((i = 0; i < ${#CARTAS_JUGADOR_ARRAY[@]}; i++)); do
+            echo "$i) ${CARTAS_JUGADOR_ARRAY[i]}"
+        done
+
+        # Pedimos la carta que queremos colocar
+
+        read -p "Introduzca el número de la carta que quiere colocar: " CARTA
+
+        # Comprobamos que la carta sea válida
+
+        if [ $CARTA -lt 0 ] || [ $CARTA -gt ${#CARTAS_JUGADOR_ARRAY[@]} ]; then
+            echo "La carta no es válida"
+            continue
+        else
+            sePuedeColocar ${CARTAS_JUGADOR_ARRAY[CARTA]%% *} ${CARTAS_JUGADOR_ARRAY[CARTA]##* }
+            if [ $? -eq 0 ]; then
+                # Si se puede colocar, colocamos la carta en la mesa
+                colocarCarta ${CARTAS_JUGADOR_ARRAY[CARTA]} ${CARTAS_JUGADOR_ARRAY[CARTA]##* }
+
+                BIENCOLOCADA=1
+            else
+                echo "La carta no se puede colocar"
+                continue
+            fi
+        fi
+
+    done
 
 
 }
@@ -276,8 +308,8 @@ mostrarMesa(){
         CARTAS_PALO=()
     
         # Mostramos la mesa por pantalla
-        for PALO in "${PALOS[@]}"; do
-            echo "$PALO: ${MESA[PALO]}"
+        for PALOh in "${PALOS[@]}"; do
+            echo "$PALOh: ${MESA[PALOh]}"
         done
 }
 
@@ -306,7 +338,6 @@ colocarCincoOrosInicio(){
     # Colocar la carta en la mesa
 
     colocarCarta $CARTA_BUSCADA
-    eliminarCartaDeJugador $JUGADOR_ID $CARTA_BUSCADA
 
 
     # Devolver el ID del jugador que empieza
@@ -329,7 +360,8 @@ colocarCarta(){
     # Variables
     CARTA=$1
     PALO=$2
-    NUMERO=$CARTA
+
+    echo "El palo y la carta en colocarCarta son $PALO $CARTA"
 
     # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente
     # Comprobamos si hay cartas en el palo
@@ -337,7 +369,16 @@ colocarCarta(){
     if [ $LENGTH -eq 0 ]; then
         # Si no hay cartas en el palo, colocamos la carta en la primera posición
         MESA[PALO]="$CARTA $PALO|"
+            
         mostrarMesa
+
+        echo ""
+            echo ""
+            echo ""
+            echo "Antes de pasarlo, el valor es: $CARTA $PALO"
+            echo ""
+            echo ""
+            echo ""
     else
         # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
@@ -353,13 +394,14 @@ colocarCarta(){
             # Obtenemos el número de la carta
             NUMERO_CARTA=${CARTAS_PALO_ARRAY[i]%% *}
             # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
-            if [ $NUMERO_CARTA -gt "$NUMERO" ]; then
+            if [ $NUMERO_CARTA -gt "$CARTA" ]; then
                 # Si el número de la carta es mayor, colocamos la carta en la primera posición del array CARTAS_PALO_ARRAY
                 CARTAS_PALO_ARRAY=("$CARTA $PALO" "${CARTAS_PALO_ARRAY[@]}")
                 COLOCADA=1
                 break
             fi
         done
+
 
         # Comprobamos si la carta ha sido colocada
         if [ $COLOCADA -eq 0 ]; then
@@ -373,6 +415,11 @@ colocarCarta(){
         mostrarMesa
         
     fi
+
+
+    eliminarCartaDeJugador $CARTA $PALO
+
+    
 }
 
 eliminarCartaDeJugador(){
@@ -380,11 +427,20 @@ eliminarCartaDeJugador(){
     # Función que elimina una carta del mazo de un jugador
 
     # Variables
-    JUGADOR_ID=$1
-    CARTA=$2
+    NUMEROeliminar=$1
+    PALOpaloeliminar=$2
+
+    echo "La carta en eliminarCarteDeJugador es $NUMEROeliminar $PALOpaloeliminar"
+
 
     # Eliminamos la carta del mazo del jugador
-    JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA//g")
+    for ((i = 0; i < ${#JUGADORES[@]}; i++)); do
+        if [[ ${JUGADORES[i]} == *"$NUMEROeliminar $PALOpaloeliminar"* ]]; then
+            JUGADORES[i]=$(echo ${JUGADORES[i]} | sed "s/$NUMEROeliminar $PALO|//g")
+            break
+        fi
+    done
+
     mostrarJugadores
 
 }
@@ -393,6 +449,8 @@ sePuedeColocar(){
 
     NUMERO=$1
     PALOENTRADA=$2
+
+    echo "La carta en sePuedeColocar es $NUMERO $PALOENTRADA"
 
 
     # Comprobamos si el numero es 5
