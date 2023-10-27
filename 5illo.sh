@@ -10,6 +10,17 @@ LINEALOGS=""
 BARAJA=()
 JUGADORES=()
 MESA=()
+#Iniciamos la mesa
+Copas=1
+Oros=2
+Espadas=3
+Bastos=4
+
+MESA[Copas]=""
+MESA[Oros]=""
+MESA[Espadas]=""
+MESA[Bastos]=""
+
 
 #############################
 #                           #
@@ -187,16 +198,17 @@ opcionConfiguracion(){
 
 }
 
-#############################                             de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|5 Oros|6 Oros|7 Oros|8 Oros|9 Oros|10 Oros"
-#                           #   Para i elementos en MESA: MESA["Oros"] = {Cartas de oros},          
-#      FUNCIONES JUGAR      #                             MESA["Copas"] = {Cartas de copas}, 
-#                           #                             MESA["Espadas"] = {Cartas de espadas}, 
-#############################                             MESA["Bastos"] = {Cartas de bastos}
+#############################                             de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|5 Oros|6 Oros|7 Oros|8 Oros|9 Oros|10 Oros|"
+#                           #   Para i elementos en MESA: MESA[Oros] = {Cartas de oros},
+#      FUNCIONES JUGAR      #                             MESA[Copas] = {Cartas de copas}, 
+#                           #                             MESA[Espadas] = {Cartas de espadas}, 
+#############################                             MESA[Bastos] = {Cartas de bastos}
 
-jugarPrincipal(){
+jugarPrincipal(){   
 
     crearBaraja
     repartirCartasJugadores
+    mostrarJugadores
     bucleJugar
 
 }
@@ -211,8 +223,7 @@ bucleJugar(){
 
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?
-    mostrarMesa
-    mostrarJugadores
+    
 
     return 0
 
@@ -242,11 +253,12 @@ mostrarMesa(){
         # Función que muestra la mesa por pantalla
     
         # Variables
+        PALOS=("Copas" "Oros" "Espadas" "Bastos")
         CARTAS_PALO=()
     
         # Mostramos la mesa por pantalla
         for PALO in "${PALOS[@]}"; do
-            echo "$PALO: ${MESA[$PALO]}"
+            echo "$PALO: ${MESA[PALO]}"
         done
 }
 
@@ -296,22 +308,29 @@ colocarCarta(){
 
     # Variables
     CARTA=$1
-    PALO=${CARTA##* } # Extraemos el palo de la carta, el comando ##* elimina todo lo que hay antes de un espacio
-    NUMERO=${CARTA%% *} # Extraemos el número de la carta, el comando %% elimina todo lo que hay después de un espacio
+    PALO=$2
 
     # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente, para ello primero hay que ver que cartas hay colocadas en el palo
 
     # Comprobamos si hay cartas en el palo
-    if [ -z ${MESA[$PALO]} ]; then
+    if [ -z ${MESA[PALO]} ]; then
         # Si no hay cartas en el palo, colocamos la carta en la primera posición
-        MESA[$PALO]=$CARTA
+        echo "La carta es $CARTA y el palo es $PALO"
+        MESA[PALO]="$CARTA $PALO"
+        mostrarMesa
     else
         # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
-        CARTAS_PALO=${MESA[$PALO]} # Obtenemos las cartas del palo
-        CARTAS_PALO=(${CARTAS_PALO//|/ }) # Separamos las cartas del palo en un array
+        CARTAS_PALO_ARRAY=${MESA[PALO]} # Obtenemos las cartas del palo
+        IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
         COLOCADA=0 # Variable que indica si la carta ha sido colocada
         POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
+
+        #bucle que imprime las cartas del palo
+
+        for CARTA_PALO in "${CARTAS_PALO[@]}"; do
+            echo "$CARTA_PALO"
+        done
 
         # Bucle para colocar la carta en la posición correspondiente
         for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
@@ -322,6 +341,7 @@ colocarCarta(){
                 # Si el número de la carta es mayor, colocamos la carta en la posición anterior
                 POSICION=$((i-1))
                 COLOCADA=1
+                echo "La posición es $POSICION"
                 break
             fi
         done
@@ -333,8 +353,8 @@ colocarCarta(){
         fi
 
         # Colocamos la carta en la posición correspondiente
-        MESA[$PALO]=$(echo ${MESA[$PALO]} | sed "s/$CARTA/|/g") # Primero eliminamos la carta de la mesa (no sé si hace falta)
-        MESA[$PALO]=$(echo ${MESA[$PALO]} | sed "s/|/ $CARTA/g") # Después la colocamos en la posición correspondiente
+        MESA[PALO]=$(echo ${MESA[PALO]} | sed "s/$CARTA/|/g") # Primero eliminamos la carta de la mesa (no sé si hace falta)
+        MESA[PALO]=$(echo ${MESA[PALO]} | sed "s/|/ $CARTA/g") # Después la colocamos en la posición correspondiente
         
     fi
 }
@@ -349,6 +369,7 @@ eliminarCartaDeJugador(){
 
     # Eliminamos la carta del mazo del jugador
     JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA//g")
+    mostrarJugadores
 
 }
 
@@ -419,8 +440,6 @@ repartirCartasJugadores(){
         JUGADORES[JUGADOR_ID]+="$CARTA|"
         ((CONTADOR++))
     done
-
-    mostrarJugadores
 
 
 }
