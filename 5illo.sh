@@ -232,26 +232,20 @@ bucleJugar(){
 
             # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
 
-            if [ $i -eq 0 ]; then
-                jugarIterativo
-                HA_GANADO=$?
-                continue
-            else
-                case $LINEAESTRATEGIAS in
-                    0)
-                        estrategia0 i
-                        HA_GANADO=$?
-                        ;;
-                    1)
-                        estrategia1 i
-                        HA_GANADO=$?
-                        ;;
-                    2)
-                        estrategia2 i
-                        HA_GANADO=$?
-                        ;;
-                esac
-            fi
+            case $LINEAESTRATEGIAS in
+                0)
+                    estrategia0 i
+                    HA_GANADO=$?
+                    ;;
+                1)
+                    estrategia1 i
+                    HA_GANADO=$?
+                    ;;
+                2)
+                    estrategia2 i
+                    HA_GANADO=$?
+                    ;;
+            esac
         done
     done
 
@@ -266,6 +260,7 @@ jugarIterativo(){
     IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
     BIENCOLOCADA=0 # Variable que indica si la carta ha sido colocada
 
+
     # UN BUCLE Do while(BIENCOLOCADA -eq 0) que imprime 10 unos y espera a que el usuario introduzca un número
 
     while [ $BIENCOLOCADA -eq 0 ]; do
@@ -275,17 +270,11 @@ jugarIterativo(){
             echo "$i) ${CARTAS_JUGADOR_ARRAY[i]}"
         done
 
-        echo "$i) Pasar turno"
-
         # Pedimos la carta que queremos colocar
 
-        read -p "Introduzca el número de la carta que quiere colocar, o si quiere pasar turno: " CARTA
+        read -p "Introduzca el número de la carta que quiere colocar: " CARTA
 
         # Comprobamos que la carta sea válida
-
-        if [ $CARTA -eq $i ]; then
-            break
-        fi
 
         if [ $CARTA -lt 0 ] || [ $CARTA -gt ${#CARTAS_JUGADOR_ARRAY[@]} ]; then
             echo "La carta no es válida"
@@ -304,20 +293,6 @@ jugarIterativo(){
         fi
 
     done
-
-    # Comprobamos si el jugador ha ganado
-
-    CARTAS_JUGADOR=${JUGADORES[0]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
-
-    if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador iterativo ha ganado"
-        return 1
-    else
-        return 0
-    fi
-
 
 
 }
@@ -376,8 +351,6 @@ colocarCincoOrosInicio(){
     
 }
 
-
-
 colocarCarta(){
     
     # Funcion que coloca una carta en la mesa
@@ -392,6 +365,9 @@ colocarCarta(){
     if [ $LENGTH -eq 0 ]; then
         # Si no hay cartas en el palo, colocamos la carta en la primera posición
         MESA[PALO]="$CARTA $PALO|"
+            
+        mostrarMesa
+
     else
         # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
@@ -443,6 +419,7 @@ eliminarCartaDeJugador(){
     NUMEROeliminar=$1
     PALOpaloeliminar=$2
 
+
     # Eliminamos la carta del mazo del jugador
     for ((i = 0; i < ${#JUGADORES[@]}; i++)); do
         if [[ ${JUGADORES[i]} == *"$NUMEROeliminar $PALOpaloeliminar"* ]]; then
@@ -459,6 +436,7 @@ sePuedeColocar(){
 
     NUMERO=$1
     PALOENTRADA=$2
+
 
     # Comprobamos si el numero es 5
 
@@ -523,38 +501,10 @@ estrategia0(){
 
     #Variables
     JUGADOR_ID=$1
-    CARTAS_JUGADOR=${JUGADORES[$JUGADOR_ID]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+    HA_GANADO=0
+    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
 
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
-
-    for ((i = 0; i < ${#CARTAS_JUGADOR_ARRAY[@]}; i++)); do
-        # Obtenemos el número de la carta
-        NUMERO_CARTA=${CARTAS_JUGADOR_ARRAY[i]%% *}
-        # Obtenemos el palo de la carta
-        PALO_CARTA=${CARTAS_JUGADOR_ARRAY[i]##* }
-        # Comprobamos si se puede colocar la carta
-        sePuedeColocar $NUMERO_CARTA $PALO_CARTA
-        if [ $? -eq 0 ]; then
-            # Si se puede colocar, colocamos la carta en la mesa
-            colocarCarta $NUMERO_CARTA $PALO_CARTA
-            return 0
-        fi
-    done
-
-    # Se comprueba si el jugador ha ganado
-
-    CARTAS_JUGADOR=${JUGADORES[$JUGADOR_ID]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
-
-    if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador $JUGADOR_ID ha ganado"
-        return 1
-    else
-        return 0
-    fi
     
 }
 
