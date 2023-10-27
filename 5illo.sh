@@ -224,10 +224,11 @@ bucleJugar(){
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?    
 
-    return 0
-
     while [ $HA_GANADO -eq 0 ]; do
         for ((i = JUGADOR_INICIO; i < LINEAJUGADORES && HA_GANADO -eq 0 ; i++)); do 
+
+            # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
+
             case $LINEAESTRATEGIAS in
                 0)
                     estrategia0 i
@@ -244,6 +245,16 @@ bucleJugar(){
             esac
         done
     done
+
+}
+
+jugarIterativo(){
+
+    # Función que contiene la lógica de juego del jugador iterativo
+
+
+
+
 
 }
 
@@ -370,13 +381,48 @@ eliminarCartaDeJugador(){
 
 sePuedeColocar(){
 
-    CARTA_JUGADOR=$1
+    NUMERO=$1
+    PALO=$2
 
-    # Comprobamos si se puede colocar la carta en la mesa
+    # Comprobamos si el numero es 5
 
-    # Variables
-    
+    if [ $NUMERO -eq 5 ]; then
+        return 0
+    fi
 
+    LENGTH=${#MESA[PALO]}
+    if [ $LENGTH -eq 0 ]; then
+        return 1
+    else
+        CARTAS_PALO_ARRAY=${MESA[PALO]} # Obtenemos las cartas del palo
+        CARTAS_PALO=()
+        IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
+
+        # If que comprueba si NUMERO es mayor que 5, na mas
+
+        if [ $NUMERO -gt 5 ]; then
+            # If que comprueba si el numero es una unidad mayor que el numero de la última carta del palo
+            if [ $NUMERO -eq $((CARTAS_PALO[-1] + 1)) ]; then
+                return 0
+            else
+                return 1
+            fi
+
+        fi
+
+        # If que comprueba si NUMERO es menor que 5, na mas
+
+        if [ $NUMERO -lt 5 ]; then
+            # If que comprueba si el numero es una unidad menor que el numero de la primera carta del palo
+            if [ $NUMERO -eq $((CARTAS_PALO[0] - 1)) ]; then
+                return 0
+            else
+                return 1
+            fi
+
+        fi
+
+    fi
 
 }
 
