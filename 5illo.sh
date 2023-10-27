@@ -223,29 +223,40 @@ bucleJugar(){
 
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?   
-    jugarIterativo 
+     
 
-    return 0
 
     while [ $HA_GANADO -eq 0 ]; do
-        for ((i = JUGADOR_INICIO; i < LINEAJUGADORES && HA_GANADO -eq 0 ; i++)); do 
-
+        for ((k = $JUGADOR_INICIO; k < $LINEAJUGADORES; k++)); do 
+            JUGADOR_INICIO=0
+            echo "Jugador $k"
             # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
 
-            case $LINEAESTRATEGIAS in
-                0)
-                    estrategia0 i
-                    HA_GANADO=$?
-                    ;;
-                1)
-                    estrategia1 i
-                    HA_GANADO=$?
-                    ;;
-                2)
-                    estrategia2 i
-                    HA_GANADO=$?
-                    ;;
-            esac
+            if [ $k -eq 0 ]; then
+                jugarIterativo
+                HA_GANADO=$?
+            else
+                case $LINEAESTRATEGIAS in
+                    0)
+                        estrategia0 $k
+                        HA_GANADO=$?
+                        ;;
+                    1)
+                        estrategia1 $k
+                        HA_GANADO=$?
+                        ;;
+                    2)
+                        estrategia2 $k
+                        HA_GANADO=$?
+                        ;;
+                esac
+            fi
+
+            if [ $HA_GANADO -eq 1 ]; then
+                break
+            fi
+
+
         done
     done
 
@@ -269,12 +280,18 @@ jugarIterativo(){
         for ((i = 0; i < ${#CARTAS_JUGADOR_ARRAY[@]}; i++)); do
             echo "$i) ${CARTAS_JUGADOR_ARRAY[i]}"
         done
+        echo "$i) Pasar turno"
 
         # Pedimos la carta que queremos colocar
 
         read -p "Introduzca el número de la carta que quiere colocar: " CARTA
 
         # Comprobamos que la carta sea válida
+
+        if [ $CARTA -eq $i ]; then
+            echo "Pasar turno"
+            return 0
+        fi
 
         if [ $CARTA -lt 0 ] || [ $CARTA -gt ${#CARTAS_JUGADOR_ARRAY[@]} ]; then
             echo "La carta no es válida"
@@ -293,6 +310,19 @@ jugarIterativo(){
         fi
 
     done
+
+    # Comprobamos si el jugador ha ganado
+
+    CARTAS_JUGADOR=${JUGADORES[0]} # Obtenemos las cartas del Jugador
+    CARTAS_JUGADOR_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+
+    if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
+        echo "El jugador 0 ha ganado"
+        return 1
+    else
+        return 0
+    fi
 
 
 }
@@ -500,13 +530,44 @@ estrategia0(){
     # Función que contiene la estrategia 0, la aleatoria
 
     #Variables
-    JUGADOR_ID=$1
-    HA_GANADO=0
-    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
+    JUGADOR_ID_est0=$1
+    CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_est0]}
+    CARTAS_JUGADOR_est0_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
 
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
+
+    for ((i = 0; i < ${#CARTAS_JUGADOR_est0_ARRAY[@]}; i++)); do
+        # Obtenemos el número de la carta
+        NUMERO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[i]%% *}
+        # Obtenemos el palo de la carta
+        PALO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[i]##* }
+        # Comprobamos si se puede colocar la carta
+        sePuedeColocar $NUMERO_CARTA_est0 $PALO_CARTA_est0
+        echo "Bucle for"
+        if [ $? -eq 0 ]; then
+            # Si se puede colocar, colocamos la carta en la mesa
+            echo "Se puede colocar"
+            colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
+            return 0
+        fi
+    done
+
+    # Se comprueba si el jugador ha ganado
+
+    CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_est0]} # Obtenemos las cartas del Jugador
+    CARTAS_JUGADOR_est0_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
+
+    if [ ${#CARTAS_JUGADOR_est0_ARRAY[@]} -eq 0 ]; then
+        echo "El jugador $JUGADOR_ID_est0 ha ganado"
+        return 1
+    else
+        return 0
+    fi
     
 }
+
 
 estrategia1(){
 
@@ -673,5 +734,3 @@ elif [ $1 != -g ]
 then
     echo "El primer parámetro es inválido"
 fi
-
-# Test
