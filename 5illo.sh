@@ -332,11 +332,10 @@ mostrarMesa(){
         # Función que muestra la mesa por pantalla
     
         # Variables
-        PALOS=("Copas" "Oros" "Espadas" "Bastos")
-        CARTAS_PALO=()
+        PALOSs=("Copas" "Oros" "Espadas" "Bastos")
     
         # Mostramos la mesa por pantalla
-        for PALOh in "${PALOS[@]}"; do
+        for PALOh in "${PALOSs[@]}"; do
             echo "$PALOh: ${MESA[PALOh]}"
         done
 }
@@ -386,57 +385,57 @@ colocarCarta(){
     # Funcion que coloca una carta en la mesa
 
     # Variables
-    CARTA=$1
-    PALO=$2
+    CARTAa=$1
+    PALOoo=$2
 
-    # Colocamos la carta en la MESA, hay que colocarla en orden y en su palo correspondiente
-    # Comprobamos si hay cartas en el palo
-    LENGTH=${#MESA[PALO]}
+    # Colocamos la cartaa en la MESA, hay que colocarla en orden y en su palooo correspondiente
+    # Comprobamos si hay cartaas en el palooo
+    LENGTH=${#MESA[PALOoo]}
     if [ $LENGTH -eq 0 ]; then
-        # Si no hay cartas en el palo, colocamos la carta en la primera posición
-        MESA[PALO]="$CARTA $PALO|"
+        # Si no hay cartaas en el palooo, colocamos la cartaa en la primera posición
+        MESA[PALOoo]="$CARTAa $PALOoo|"
             
         mostrarMesa
 
     else
-        # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
+        # Si hay cartaas en el palooo, colocamos la cartaa en la posición correspondiente
         # Variables
-        CARTAS_PALO=${MESA[PALO]} # Obtenemos las cartas del palo
-        CARTAS_PALO_ARRAY=()
-        IFS='|' read -r -a CARTAS_PALO_ARRAY <<< "$CARTAS_PALO"
-        COLOCADA=0 # Variable que indica si la carta ha sido colocada
-        POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
+        CARTAaS_PALOoo=${MESA[PALOoo]} # Obtenemos las cartaas del palooo
+        CARTAaS_PALOoo_ARRAY=()
+        IFS='|' read -r -a CARTAaS_PALOoo_ARRAY <<< "$CARTAaS_PALOoo"
+        COLOCADA=0 # Variable que indica si la cartaa ha sido colocada
+        POSICION=0 # Variable que indica la posición en la que se va a colocar la cartaa
 
 
-        # Bucle para colocar la carta en la posición correspondiente
-        for ((i = 0; i < ${#CARTAS_PALO_ARRAY[@]}; i++)); do
-            # Obtenemos el número de la carta
-            NUMERO_CARTA=${CARTAS_PALO_ARRAY[i]%% *}
-            # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
-            if [ $NUMERO_CARTA -gt "$CARTA" ]; then
-                # Si el número de la carta es mayor, colocamos la carta en la primera posición del array CARTAS_PALO_ARRAY
-                CARTAS_PALO_ARRAY=("$CARTA $PALO" "${CARTAS_PALO_ARRAY[@]}")
+        # Bucle para colocar la cartaa en la posición correspondiente
+        for ((i = 0; i < ${#CARTAaS_PALOoo_ARRAY[@]}; i++)); do
+            # Obtenemos el número de la cartaa
+            NUMERO_CARTAa=${CARTAaS_PALOoo_ARRAY[i]%% *}
+            # Comprobamos si el número de la cartaa es mayor que el número de la cartaa que queremos colocar
+            if [ $NUMERO_CARTAa -gt "$CARTAa" ]; then
+                # Si el número de la cartaa es mayor, colocamos la cartaa en la primera posición del array CARTAaS_PALOoo_ARRAY
+                CARTAaS_PALOoo_ARRAY=("$CARTAa $PALOoo" "${CARTAaS_PALOoo_ARRAY[@]}")
                 COLOCADA=1
                 break
             fi
         done
 
 
-        # Comprobamos si la carta ha sido colocada
+        # Comprobamos si la cartaa ha sido colocada
         if [ $COLOCADA -eq 0 ]; then
-            # Si la carta no ha sido colocada, la colocamos en la última posición
-            CARTAS_PALO_ARRAY+=("$CARTA $PALO")
+            # Si la cartaa no ha sido colocada, la colocamos en la última posición
+            CARTAaS_PALOoo_ARRAY+=("$CARTAa $PALOoo")
         fi
 
-        # Pasamos el array CARTAS_PALO_ARRAY a un string de la forma "4 Oros|5 Oros|6 Oros|"
-        MESA[PALO]=$(printf "%s|" "${CARTAS_PALO_ARRAY[@]}")
+        # Pasamos el array CARTAaS_PALOoo_ARRAY a un string de la forma "4 Oros|5 Oros|6 Oros|"
+        MESA[PALOoo]=$(printf "%s|" "${CARTAaS_PALOoo_ARRAY[@]}")
 
         mostrarMesa
         
     fi
 
-
-    eliminarCartaDeJugador $CARTA $PALO
+    echo "Antes de eliminarCartaDeJugador $CARTAa $PALOoo"
+    eliminarCartaDeJugador $CARTAa $PALOoo
 
     
 }
@@ -453,7 +452,7 @@ eliminarCartaDeJugador(){
     # Eliminamos la carta del mazo del jugador
     for ((i = 0; i < ${#JUGADORES[@]}; i++)); do
         if [[ ${JUGADORES[i]} == *"$NUMEROeliminar $PALOpaloeliminar"* ]]; then
-            JUGADORES[i]=$(echo ${JUGADORES[i]} | sed "s/$NUMEROeliminar $PALO|//g")
+            JUGADORES[i]=$(echo ${JUGADORES[i]} | sed "s/$NUMEROeliminar $PALOpaloeliminar|//g")
             break
         fi
     done
@@ -464,30 +463,31 @@ eliminarCartaDeJugador(){
 
 sePuedeColocar(){
 
-    NUMERO=$1
-    PALOENTRADA=$2
+    NUMEROo=$1
+    PALOENTRADAa=$2
 
 
-    # Comprobamos si el numero es 5
+    # Comprobamos si el numeroo es 5
 
-    if [ $NUMERO -eq 5 ]; then
+    if [ $NUMEROo -eq 5 ]; then
+        echo "El numero es 5 en sePuedeColocar"
         return 0
     fi
 
-    HAYCARTA=${#MESA[PALOENTRADA]}
+    HAYCARTA=${#MESA[PALOENTRADAa]}
     if [ $HAYCARTA -eq 0 ]; then
         return 1
     else
-        CARTAS_PALO_ARRAY=${MESA[PALOENTRADA]} # Obtenemos las cartas del palo
+        CARTAS_PALO_ARRAY=${MESA[PALOENTRADAa]} # Obtenemos las cartas del palo
         CARTAS_PALO=()
         IFS='|' read -r -a CARTAS_PALO <<< "$CARTAS_PALO_ARRAY"
 
-        # Hay que transformar el array CARTAS_PALO EN UN ARRAY DE NUMEROS, es decir, quitando a "5 Oros" el "Oros" y quedándonos con el 5
+        # Hay que transformar el array CARTAS_PALO EN UN ARRAY DE NUMEROoS, es decir, quitando a "5 Oros" el "Oros" y quedándonos con el 5
 
         for ((i = 0; i < ${#CARTAS_PALO[@]}; i++)); do
             # Obtenemos el número de la carta
-            NUMERO_CARTA=${CARTAS_PALO[i]%% *}
-            CARTAS_PALO[i]=$NUMERO_CARTA
+            NUMEROo_CARTA=${CARTAS_PALO[i]%% *}
+            CARTAS_PALO[i]=$NUMEROo_CARTA
         done
 
 
@@ -495,10 +495,11 @@ sePuedeColocar(){
 
         LENGTH=${#CARTAS_PALO[@]}
 
-        if [ $NUMERO -gt 5 ]; then
-            # If que comprueba si el numero es una unidad mayor que el numero de la última carta del palo
+        if [ $NUMEROo -gt 5 ]; then
+            # If que comprueba si el numeroo es una unidad mayor que el numeroo de la última carta del palo
             
-            if [ $NUMERO -eq $((${CARTAS_PALO[$((LENGTH-1))]} + 1)) ]; then
+            if [ $NUMEROo -eq $((${CARTAS_PALO[$((LENGTH-1))]} + 1)) ]; then
+                echo "El numero es $NUMEROo y el numero de la ultima carta es ${CARTAS_PALO[$((LENGTH-1))]} -gt 5"
                 return 0
             else
                 return 1
@@ -508,9 +509,10 @@ sePuedeColocar(){
 
         # If que comprueba si NUMERO es menor que 5, na mas
 
-        if [ $NUMERO -lt 5 ]; then
+        if [ $NUMEROo -lt 5 ]; then
             # If que comprueba si el numero es una unidad menor que el numero de la primera carta del palo
-            if [ $NUMERO -eq $((CARTAS_PALO[0] - 1)) ]; then
+            if [ $NUMEROo -eq $((CARTAS_PALO[0] - 1)) ]; then
+                echo "El numero es $NUMEROo y el numero de la primera carta es ${CARTAS_PALO[0]} -lt 5"
                 return 0
             else
                 return 1
@@ -544,7 +546,6 @@ estrategia0(){
         PALO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[i]##* }
         # Comprobamos si se puede colocar la carta
         sePuedeColocar $NUMERO_CARTA_est0 $PALO_CARTA_est0
-        echo "Bucle for"
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
             echo "Se puede colocar"
