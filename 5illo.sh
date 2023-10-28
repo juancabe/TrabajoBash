@@ -229,7 +229,7 @@ bucleJugar(){
     while [ $HA_GANADO -eq 0 ]; do
         for ((k = $JUGADOR_INICIO; k < $LINEAJUGADORES; k++)); do 
             JUGADOR_INICIO=0
-            echo "Jugador $k"
+            echo "Jugador $((k+1))"
             # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
 
             if [ $k -eq 0 ]; then
@@ -434,7 +434,6 @@ colocarCarta(){
         
     fi
 
-    echo "Antes de eliminarCartaDeJugador $CARTAa $PALOoo"
     eliminarCartaDeJugador $CARTAa $PALOoo
 
     
@@ -470,7 +469,6 @@ sePuedeColocar(){
     # Comprobamos si el numeroo es 5
 
     if [ $NUMEROo -eq 5 ]; then
-        echo "El numero es 5 en sePuedeColocar"
         return 0
     fi
 
@@ -499,7 +497,6 @@ sePuedeColocar(){
             # If que comprueba si el numeroo es una unidad mayor que el numeroo de la última carta del palo
             
             if [ $NUMEROo -eq $((${CARTAS_PALO[$((LENGTH-1))]} + 1)) ]; then
-                echo "El numero es $NUMEROo y el numero de la ultima carta es ${CARTAS_PALO[$((LENGTH-1))]} -gt 5"
                 return 0
             else
                 return 1
@@ -512,7 +509,6 @@ sePuedeColocar(){
         if [ $NUMEROo -lt 5 ]; then
             # If que comprueba si el numero es una unidad menor que el numero de la primera carta del palo
             if [ $NUMEROo -eq $((CARTAS_PALO[0] - 1)) ]; then
-                echo "El numero es $NUMEROo y el numero de la primera carta es ${CARTAS_PALO[0]} -lt 5"
                 return 0
             else
                 return 1
@@ -548,7 +544,6 @@ estrategia0(){
         sePuedeColocar $NUMERO_CARTA_est0 $PALO_CARTA_est0
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
-            echo "Se puede colocar"
             colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
             return 0
         fi
