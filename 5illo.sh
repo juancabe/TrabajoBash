@@ -206,6 +206,16 @@ opcionConfiguracion(){
 
 jugarPrincipal(){   
 
+
+    # Seteamos todas las variables y arrays a 0
+    BARAJA=()
+    JUGADORES=()
+    MESA=()
+    MESA[Copas]=""
+    MESA[Oros]=""
+    MESA[Espadas]=""
+    MESA[Bastos]=""
+
     crearBaraja
     repartirCartasJugadores
     mostrarJugadores
@@ -504,8 +514,6 @@ sePuedeColocar(){
 
         fi
 
-        # If que comprueba si NUMERO es menor que 5, na mas
-
         if [ $NUMEROo -lt 5 ]; then
             # If que comprueba si el numero es una unidad menor que el numero de la primera carta del palo
             if [ $NUMEROo -eq $((CARTAS_PALO[0] - 1)) ]; then
@@ -533,19 +541,19 @@ estrategia0(){
     CARTAS_JUGADOR_est0_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
 
+
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
 
-    for ((i = 0; i < ${#CARTAS_JUGADOR_est0_ARRAY[@]}; i++)); do
+    for ((l = 0; l < ${#CARTAS_JUGADOR_est0_ARRAY[@]}; l++)); do
         # Obtenemos el número de la carta
-        NUMERO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[i]%% *}
+        NUMERO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[l]%% *}
         # Obtenemos el palo de la carta
-        PALO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[i]##* }
+        PALO_CARTA_est0=${CARTAS_JUGADOR_est0_ARRAY[l]##* }
         # Comprobamos si se puede colocar la carta
         sePuedeColocar $NUMERO_CARTA_est0 $PALO_CARTA_est0
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
             colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
-            return 0
         fi
     done
 
@@ -556,7 +564,7 @@ estrategia0(){
     IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
 
     if [ ${#CARTAS_JUGADOR_est0_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador $JUGADOR_ID_est0 ha ganado"
+        echo "El jugador $((JUGADOR_ID_est0+1)) ha ganado"
         return 1
     else
         return 0
