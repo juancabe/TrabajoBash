@@ -614,12 +614,76 @@ estrategia0(){
 estrategia1(){
 
     # Función que contiene la estrategia 1
+    # En esta estrategia priorizamos colocar cartas de las cuales tenemos la siguiente, 
+    # así aseguramos que no facilitamos a los demás colocar.
 
     #Variables
-    JUGADOR_ID=$1
-    HA_GANADO=0
-    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
+    JUGADOR_ID_est1=$1
+    CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_est1]}
+    CARTAS_JUGADOR_est1_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_est1_ARRAY <<< "$CARTAS_JUGADOR_est1"
 
+    # Bucle en el cual buscamos cartas de las cuales tenemos la siguiente, excepto los cincos
+    
+    for ((ii = 0; ii < ${#CARTAS_JUGADOR_est1_ARRAY[@]}; ii++)); do
+        # Obtenemos el número de la carta
+        NUMERO_CARTA_est1=${CARTAS_JUGADOR_est1_ARRAY[ii]%% *}
+
+        # Comprobamos si el número de la carta es 5, si es 5, pasamos a la siguiente carta
+        if [ $NUMERO_CARTA_est1 -eq 5 ]; then
+            continue
+        fi
+
+        # Obtenemos el palo de la carta
+        PALO_CARTA_est1=${CARTAS_JUGADOR_est1_ARRAY[ii]##* }
+        # Comprobamos si se puede colocar la carta
+        sePuedeColocar $NUMERO_CARTA_est1 $PALO_CARTA_est1
+        if [ $? -eq 0 ]; then
+            # Si se puede colocar, buscamos a ver si tenemos la siguiente carta
+
+            # Si la carta es mayor que 5, buscamos la carta posterior
+            if [ $NUMERO_CARTA_est1 -gt 5 ]; then
+
+                if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1+1)) $PALO_CARTA_est1"* ]]; then
+                    # Si tenemos la siguiente carta, la colocamos
+                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    break
+                fi
+
+            fi
+
+            # Si la carta es menor que 5, buscamos la carta anterior
+            if [ $NUMERO_CARTA_est1 -lt 5 ]; then
+
+                if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1-1)) $PALO_CARTA_est1"* ]]; then
+                    # Si tenemos la siguiente carta, la colocamos
+                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    break
+                fi
+
+            fi            
+        fi
+    done
+
+    # Si no hemos podido colocar ninguna carta, colocamos una carta aleatoria
+
+    if [ $ii -eq ${#CARTAS_JUGADOR_est1_ARRAY[@]} ]; then
+        estrategia0 $JUGADOR_ID_est1
+        return $?
+    fi
+
+    # Se comprueba si el jugador ha ganado
+
+    CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_est1]} # Obtenemos las cartas del Jugador
+    CARTAS_JUGADOR_est1_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_est1_ARRAY <<< "$CARTAS_JUGADOR_est1"
+
+    if [ ${#CARTAS_JUGADOR_est1_ARRAY[@]} -eq 0 ]; then
+        echo "El jugador $((JUGADOR_ID_est1+1)) ha ganado"
+        return 1
+    else
+        return 0
+    fi
     
 }
 

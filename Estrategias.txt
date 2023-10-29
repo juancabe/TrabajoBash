@@ -1,5 +1,5 @@
 Estrategia 1:
-Priorizar colocar cartas de las cuales tenemos la siguiente, así aseguramos que no facilitamos a los demás colocar.
+Priorizar colocar cartas de las cuales tenemos la siguiente, excepto cincos, así aseguramos que no facilitamos a los demás colocar.
 
 Estrategia 2:
 Los cincos son la última opción.
