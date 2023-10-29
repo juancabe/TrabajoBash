@@ -280,6 +280,16 @@ jugarIterativo(){
     CARTAS_JUGADOR_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
     BIENCOLOCADA=0 # Variable que indica si la carta ha sido colocada
+    PUEDEJUGAR=0
+
+    # Comprobamos si el jugador puede jugar
+    puedeJugar 0
+    PUEDEJUGAR=$?
+    if [ $PUEDEJUGAR -eq 1 ]; then
+        # Si el jugador no puede jugar, se le añade una carta
+        echo "El jugador 1 no puede jugar"
+        return 0
+    fi
 
 
     # UN BUCLE Do while(BIENCOLOCADA -eq 0) que imprime 10 unos y espera a que el usuario introduzca un número
@@ -290,18 +300,19 @@ jugarIterativo(){
         for ((i = 0; i < ${#CARTAS_JUGADOR_ARRAY[@]}; i++)); do
             echo "$i) ${CARTAS_JUGADOR_ARRAY[i]}"
         done
-        echo "$i) Pasar turno"
 
         # Pedimos la carta que queremos colocar
 
         read -p "Introduzca el número de la carta que quiere colocar: " CARTA
 
-        # Comprobamos que la carta sea válida
-
-        if [ $CARTA -eq $i ]; then
-            echo "Pasar turno"
-            return 0
+        # Verificar si lo introducido es un número usando una expresión regular
+        if ! [[ $CARTA =~ ^[0-9]{1,2}$ ]]; then
+            echo "La carta no es válida"
+            continue
         fi
+
+
+        # Comprobamos que la carta sea válida
 
         if [ $CARTA -lt 0 ] || [ $CARTA -gt ${#CARTAS_JUGADOR_ARRAY[@]} ]; then
             echo "La carta no es válida"
@@ -531,6 +542,33 @@ sePuedeColocar(){
 
 }
 
+puedeJugar(){
+
+    # Función que comprueba si un jugador puede jugar
+
+    # Variables
+    JUGADOR_ID=$1
+    CARTAS_JUGADOR=${JUGADORES[JUGADOR_ID]}
+    CARTAS_JUGADOR_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+
+    # Bucle para comprobar si el jugador puede jugar
+    for ((y = 0; y < ${#CARTAS_JUGADOR_ARRAY[@]}; y++)); do
+        # Obtenemos el número de la carta
+        NUMERO_CARTA=${CARTAS_JUGADOR_ARRAY[y]%% *}
+        # Obtenemos el palo de la carta
+        PALO_CARTA=${CARTAS_JUGADOR_ARRAY[y]##* }
+        # Comprobamos si se puede colocar la carta
+        sePuedeColocar $NUMERO_CARTA $PALO_CARTA
+        if [ $? -eq 0 ]; then
+            return 0
+        fi
+    done
+
+    return 1
+
+}
+
 estrategia0(){
 
     # Función que contiene la estrategia 0, la aleatoria
@@ -554,6 +592,7 @@ estrategia0(){
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
             colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
+            break
         fi
     done
 
@@ -571,7 +610,6 @@ estrategia0(){
     fi
     
 }
-
 
 estrategia1(){
 
