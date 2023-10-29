@@ -2,4 +2,4 @@ Estrategia 1:
 Priorizar colocar cartas de las cuales tenemos la siguiente, excepto cincos, así aseguramos que no facilitamos a los demás colocar.
 
 Estrategia 2:
-Estrategia 1 + si los demás jugadores tienen la siguiente carta, evitamos ponerla.
+No sé.

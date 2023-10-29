@@ -21,6 +21,8 @@ MESA[Oros]=""
 MESA[Espadas]=""
 MESA[Bastos]=""
 
+HACOLOCADOest1=0
+
 
 #############################
 #                           #
@@ -578,6 +580,7 @@ estrategia0(){
     CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_est0]}
     CARTAS_JUGADOR_est0_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
+    HACOLOCADOest1=0
 
 
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
@@ -592,6 +595,7 @@ estrategia0(){
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
             colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
+            HACOLOCADOest1=1
             break
         fi
     done
@@ -622,6 +626,7 @@ estrategia1(){
     CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_est1]}
     CARTAS_JUGADOR_est1_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_est1_ARRAY <<< "$CARTAS_JUGADOR_est1"
+    HACOLOCADOest1=0
 
     # Bucle en el cual buscamos cartas de las cuales tenemos la siguiente, excepto los cincos
     
@@ -647,6 +652,7 @@ estrategia1(){
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1+1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
                     colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    HACOLOCADOest1=1
                     break
                 fi
 
@@ -658,6 +664,7 @@ estrategia1(){
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1-1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
                     colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    HACOLOCADOest1=1
                     break
                 fi
 
@@ -688,14 +695,6 @@ estrategia1(){
 }
 
 estrategia2(){
-
-    # Función que contiene la estrategia 2
-
-    #Variables
-    JUGADOR_ID=$1
-    HA_GANADO=0
-    CARTA_JUGADOR=${JUGADORES[JUGADOR_ID]}
-
     
 }
 
