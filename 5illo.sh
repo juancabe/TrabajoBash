@@ -695,7 +695,7 @@ estrategia1(){
 }
 
 estrategia2(){
-    
+    echo ""
 }
 
 repartirCartasJugadores(){
