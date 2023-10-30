@@ -246,28 +246,25 @@ bucleJugar(){
 
             if [ $k -eq 0 ]; then
                 jugarIterativo
-                HA_GANADO=$?
             else
                 case $LINEAESTRATEGIAS in
                     0)
                         estrategia0 $k
-                        HA_GANADO=$?
                         ;;
                     1)
                         estrategia1 $k
-                        HA_GANADO=$?
                         ;;
                     2)
                         estrategia2 $k
-                        HA_GANADO=$?
                         ;;
                 esac
             fi
 
+            haGanado $k
+            HA_GANADO=$?
             if [ $HA_GANADO -eq 1 ]; then
                 break
             fi
-
 
         done
     done
@@ -294,7 +291,7 @@ jugarIterativo(){
     fi
 
 
-    # UN BUCLE Do while(BIENCOLOCADA -eq 0) que imprime 10 unos y espera a que el usuario introduzca un número
+    # Bucle que imprime las cartas del jugador y pide la carta que se quiere colocar
 
     while [ $BIENCOLOCADA -eq 0 ]; do
         # Bucle for para mostrar todas las cartas del jugador
@@ -333,21 +330,23 @@ jugarIterativo(){
         fi
 
     done
+}
 
-    # Comprobamos si el jugador ha ganado
-
-    CARTAS_JUGADOR=${JUGADORES[0]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
-
-    if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador 0 ha ganado"
-        return 1
-    else
-        return 0
-    fi
-
-
+haGanado() {
+    
+        # Función que comprueba si un jugador ha ganado
+    
+        # Variables
+        JUGADOR_ID_haGanado=$1
+        CARTAS_JUGADOR=${JUGADORES[JUGADOR_ID_haGanado]} # Obtenemos las cartas del Jugador
+        CARTAS_JUGADOR_ARRAY=()
+        IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+    
+        if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
+            return 1
+        else
+            return 0
+        fi
 }
 
 mostrarMesa(){
@@ -599,20 +598,6 @@ estrategia0(){
             break
         fi
     done
-
-    # Se comprueba si el jugador ha ganado
-
-    CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_est0]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_est0_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
-
-    if [ ${#CARTAS_JUGADOR_est0_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador $((JUGADOR_ID_est0+1)) ha ganado"
-        return 1
-    else
-        return 0
-    fi
-    
 }
 
 estrategia1(){
@@ -678,20 +663,6 @@ estrategia1(){
         estrategia0 $JUGADOR_ID_est1
         return $?
     fi
-
-    # Se comprueba si el jugador ha ganado
-
-    CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_est1]} # Obtenemos las cartas del Jugador
-    CARTAS_JUGADOR_est1_ARRAY=()
-    IFS='|' read -r -a CARTAS_JUGADOR_est1_ARRAY <<< "$CARTAS_JUGADOR_est1"
-
-    if [ ${#CARTAS_JUGADOR_est1_ARRAY[@]} -eq 0 ]; then
-        echo "El jugador $((JUGADOR_ID_est1+1)) ha ganado"
-        return 1
-    else
-        return 0
-    fi
-    
 }
 
 estrategia2(){
