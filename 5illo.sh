@@ -21,8 +21,6 @@ MESA[Oros]=""
 MESA[Espadas]=""
 MESA[Bastos]=""
 
-HACOLOCADOest1=0
-
 
 #############################
 #                           #
@@ -285,7 +283,7 @@ jugarIterativo(){
     puedeJugar 0
     PUEDEJUGAR=$?
     if [ $PUEDEJUGAR -eq 1 ]; then
-        # Si el jugador no puede jugar, se le añade una carta
+        # Si el jugador no puede jugar, pasamos al siguiente jugador
         echo "El jugador 1 no puede jugar"
         return 0
     fi
@@ -575,12 +573,19 @@ estrategia0(){
     # Función que contiene la estrategia 0, la aleatoria
 
     #Variables
-    JUGADOR_ID_est0=$1
-    CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_est0]}
+    JUGADOR_ID_A=$1
+    CARTAS_JUGADOR_est0=${JUGADORES[$JUGADOR_ID_A]}
     CARTAS_JUGADOR_est0_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_est0_ARRAY <<< "$CARTAS_JUGADOR_est0"
-    HACOLOCADOest1=0
 
+    # Comprobamos si el jugador puede jugar
+    puedeJugar $JUGADOR_ID_A
+    PUEDEJUGAR=$?
+    if [ $PUEDEJUGAR -eq 1 ]; then
+        # Si el jugador no puede jugar, pasamos al siguiente jugador
+        echo "El jugador $((JUGADOR_ID_A+1)) no puede jugar"
+        return 0
+    fi
 
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
 
@@ -594,7 +599,6 @@ estrategia0(){
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
             colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
-            HACOLOCADOest1=1
             break
         fi
     done
@@ -607,11 +611,19 @@ estrategia1(){
     # así aseguramos que no facilitamos a los demás colocar.
 
     #Variables
-    JUGADOR_ID_est1=$1
-    CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_est1]}
+    JUGADOR_ID_B=$1
+    CARTAS_JUGADOR_est1=${JUGADORES[$JUGADOR_ID_B]}
     CARTAS_JUGADOR_est1_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_est1_ARRAY <<< "$CARTAS_JUGADOR_est1"
-    HACOLOCADOest1=0
+    
+    # Comprobamos si el jugador puede jugar
+    puedeJugar $JUGADOR_ID_B
+    PUEDEJUGAR=$?
+    if [ $PUEDEJUGAR -eq 1 ]; then
+        # Si el jugador no puede jugar, pasamos al siguiente jugador
+        echo "El jugador $((JUGADOR_ID_B+1)) no puede jugar"
+        return 0
+    fi
 
     # Bucle en el cual buscamos cartas de las cuales tenemos la siguiente, excepto los cincos
     
@@ -637,7 +649,6 @@ estrategia1(){
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1+1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
                     colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
-                    HACOLOCADOest1=1
                     break
                 fi
 
@@ -649,7 +660,6 @@ estrategia1(){
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1-1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
                     colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
-                    HACOLOCADOest1=1
                     break
                 fi
 
@@ -660,13 +670,147 @@ estrategia1(){
     # Si no hemos podido colocar ninguna carta, colocamos una carta aleatoria
 
     if [ $ii -eq ${#CARTAS_JUGADOR_est1_ARRAY[@]} ]; then
-        estrategia0 $JUGADOR_ID_est1
+        estrategia0 $JUGADOR_ID_B
         return $?
     fi
 }
 
 estrategia2(){
-    echo ""
+
+    # Función que contiene la estrategia 2
+    # En esta estrategia priorizamos colocar un rey o un uno,
+    # si esto no es posible, miramos a ver si tenemos un 5 y de
+    # ese palo cartas cercanas al límite (sota, caballo, rey o uno, dos)
+    # y no las intermedias (tres, cuatro, seis y siete)
+    # si es así, colocamos el 5, ya que vamos a necesitar que los demás
+    # coloquen cartas intermedias para poder colocar las nuestras
+    # si tenemos esas cartas intermedias, no colocamos el 5
+    # En caso de no tener un 5, colocamos una carta aleatoria
+    # así aseguramos que no facilitamos a los demás colocar.
+
+    #Variables
+    JUGADOR_ID_C=$1
+    CARTAS_JUGADOR_est2=${JUGADORES[$JUGADOR_ID_C]}
+    CARTAS_JUGADOR_est2_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_est2_ARRAY <<< "$CARTAS_JUGADOR_est2"
+    
+    # Comprobamos si el jugador puede jugar
+    puedeJugar $JUGADOR_ID_C
+    PUEDEJUGAR=$?
+    if [ $PUEDEJUGAR -eq 1 ]; then
+        # Si el jugador no puede jugar, pasamos al siguiente jugador
+        echo "El jugador $((JUGADOR_ID_C+1)) no puede jugar"
+        return 0
+    fi
+
+    for ((e=0 ; e < ${#CARTAS_JUGADOR_est2_ARRAY[@]} ; e++)); do
+        # Obtenemos el número y palo de la carta
+        NUMERO_CARTA_e=${CARTAS_JUGADOR_est2_ARRAY[e]%% *}
+        PALO_CARTA_e=${CARTAS_JUGADOR_est2_ARRAY[e]##* }
+        
+        # Miramos a ver si tenemos un rey o un uno
+        if [ $NUMERO_CARTA_e -eq 10 ]; then
+            sePuedeColocar $NUMERO_CARTA_e $PALO_CARTA_e
+            if [ $? -eq 0 ]; then
+                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                break
+            fi
+        else if [ $NUMERO_CARTA_e -eq 1 ]; then
+            sePuedeColocar $NUMERO_CARTA_e $PALO_CARTA_e
+            if [ $? -eq 0 ]; then
+                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                break
+            fi
+        fi
+        fi
+    done
+
+    for ((e=0 ; e < ${#CARTAS_JUGADOR_est2_ARRAY[@]} ; e++)); do
+        # Obtenemos el número y palo de la carta
+        NUMERO_CARTA_e=${CARTAS_JUGADOR_est2_ARRAY[e]%% *}
+        PALO_CARTA_e=${CARTAS_JUGADOR_est2_ARRAY[e]##* }
+
+        # Miramos a ver si tenemos un 5
+        if [ $NUMERO_CARTA_e -eq 5 ]; then
+            # Si tenemos un 5, miramos a ver si tenemos cartas cercanas
+            # al límite de ese palo y no las intermedias. Si es así, colocamos el 5
+            for ((carta = 0 ; carta < ${#CARTAS_JUGADOR_est2_ARRAY[@]} ; carta++)); do
+                # Obtenemos el número y palo de la carta
+                NUMERO_CARTA_c=${CARTAS_JUGADOR_est2_ARRAY[carta]%% *}
+                PALO_CARTA_c=${CARTAS_JUGADOR_est2_ARRAY[carta]##* }
+
+                # Comprobamos si el palo de la carta es el mismo que el del 5
+                if [ $PALO_CARTA_c == $PALO_CARTA_e ]; then
+                    # Si la carta es el mismo 5, pasamos a la siguiente carta
+                    if [ $NUMERO_CARTA_c -eq $NUMERO_CARTA_e ]; then
+                        continue
+                    fi
+                    case $NUMERO_CARTA_c in
+                        9)
+                            # Si tenemos un 9, comprobamos que no tenemos el 6, 7 y 8
+                            # (Si tenemos solo una de las tres, colocamos el 5)
+                            CARTAS_DISPONIBLES=0
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c-3)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c-2)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c-1)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+
+                            if [ $CARTAS_DISPONIBLES -eq 1 ]; then
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                return 0
+                            else
+                                continue
+                            fi
+                            ;;
+                        8)
+                            # Si tenemos un 8, comprobamos que no tenemos el 6 y 7
+                            # (Si no tenemos ninguna de las dos, colocamos el 5)
+                            CARTAS_DISPONIBLES=0
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c-2)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c-1)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+
+                            if [ $CARTAS_DISPONIBLES -eq 0 ]; then
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                return 0
+                            else
+                                continue
+                            fi
+                            ;;
+                        2)
+                            # Si tenemos un 2, comprobamos que no tenemos el 3 y 4
+                            # (Si no tenemos ninguna de las dos, colocamos el 5)
+                            CARTAS_DISPONIBLES=0
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c+1)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+                            if [[ "$CARTAS_JUGADOR_est2" == *"$((NUMERO_CARTA_c+2)) $PALO_CARTA_c"* ]]; then
+                                CARTAS_DISPONIBLES+=1;
+                            fi
+
+                            if [ $CARTAS_DISPONIBLES -eq 0 ]; then
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                return 0
+                            else
+                                continue
+                            fi
+                            ;;
+                    esac
+                fi
+            done
+        fi
+    done
+
+    # Si no hemos podido colocar ninguna carta, colocamos una carta con la estrategia1
+    estrategia1 $JUGADOR_ID_C
 }
 
 repartirCartasJugadores(){
