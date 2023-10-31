@@ -176,7 +176,7 @@ mostrarEstadisticas() {
         fi
     done
     OPERACION="$PARTIDAS_GANADAS_JA/$NUMERO_PARTIDAS_JA"
-    RATIO_JA=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JA=$(echo "scale=2; $OPERACION" | bc)
     RATIO_JA=$(echo "$RATIO_JA * 100" | bc)
 
     NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
@@ -186,7 +186,7 @@ mostrarEstadisticas() {
         fi
     done
     OPERACION="$PARTIDAS_GANADAS_JB/$NUMERO_PARTIDAS_JB"
-    RATIO_JB=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JB=$(echo "scale=2; $OPERACION" | bc)
     RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
 
     for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
@@ -197,9 +197,13 @@ mostrarEstadisticas() {
             PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
         fi
     done
-    OPERACION="$PARTIDAS_GANADAS_JC/$NUMERO_PARTIDAS_JC"
-    RATIO_JC=$(echo "scale=2; $OPERACION" | bc -l)
-    RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
+    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
+        RATIO_JC=0
+    else
+        OPERACION="$PARTIDAS_GANADAS_JC/$NUMERO_PARTIDAS_JC"
+        RATIO_JC=$(echo "scale=2; $OPERACION" | bc)
+        RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
+    fi
 
     for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
@@ -209,20 +213,37 @@ mostrarEstadisticas() {
             PARTIDAS_GANADAS_JD=$((PARTIDAS_GANADAS_JD+1))
         fi
     done
-    OPERACION="$PARTIDAS_GANADAS_JD/$NUMERO_PARTIDAS_JD"
-    RATIO_JD=$(echo "scale=2; $OPERACION" | bc -l)
-    RATIO_JD=$(echo "$RATIO_JD * 100" | bc)
+    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
+        RATIO_JD=0
+    else
+        OPERACION="$PARTIDAS_GANADAS_JD/$NUMERO_PARTIDAS_JD"
+        RATIO_JD=$(echo "scale=2; $OPERACION" | bc)
+        RATIO_JD=$(echo "$RATIO_JD * 100" | bc)
+    fi
+
+    # Ahora quitamos los decimales a los porcentajes
+    RATIO_JA=${RATIO_JA%.*}
+    RATIO_JB=${RATIO_JB%.*}
+    RATIO_JC=${RATIO_JC%.*}
+    RATIO_JD=${RATIO_JD%.*}
 
     echo "Número total de partidas jugadas: $NUMERO_PARTIDAS"
     echo "Media de los tiempos de todas las partidas jugadas: $TIEMPO_MEDIO"
     echo "Tiempo total invertido en todas las partidas: $TIEMPO_TOTAL"
     echo "Media de los puntos obtenidos por el ganador en todas las partidas: $PUNTOS_MEDIOS"
-    echo "Porcentaje de partidas ganadas del jugador A (respecto a las jugadas por A): $PARTIDAS_GANADAS_JA entre $NUMERO_PARTIDAS_JA dan $RATIO_JA%"
-    echo "Porcentaje de partidas ganadas del jugador B (respecto a las jugadas por B): $PARTIDAS_GANADAS_JB entre $NUMERO_PARTIDAS_JB dan $RATIO_JB%"
-    echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): $PARTIDAS_GANADAS_JC entre $NUMERO_PARTIDAS_JC dan $RATIO_JC%"
-    echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): $PARTIDAS_GANADAS_JD entre $NUMERO_PARTIDAS_JD dan $RATIO_JD%"
+    echo "Porcentaje de partidas ganadas del jugador A (respecto a las jugadas por A): $RATIO_JA%"
+    echo "Porcentaje de partidas ganadas del jugador B (respecto a las jugadas por B): $RATIO_JB%"
+    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
+        echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): No ha jugado ninguna partida"
+    else
+        echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): $RATIO_JC%"
+    fi
+    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
+        echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): No ha jugado ninguna partida"
+    else
+        echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): $RATIO_JD%"
+    fi
     echo ""
-    read -p "Pulse INTRO para continuar..."
 }
 
 
@@ -390,9 +411,9 @@ bucleJugar(){
             echo "Jugador $((k+1))"
             # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
 
-            if [ $k -eq 0 ]; then
-                jugarIterativo
-            else
+            #if [ $k -eq 0 ]; then
+            #    jugarIterativo
+            #else
                 case $LINEAESTRATEGIAS in
                     0)
                         estrategia0 $k
@@ -404,7 +425,7 @@ bucleJugar(){
                         estrategia2 $k
                         ;;
                 esac
-            fi
+            #fi
 
             haGanado $k
             HA_GANADO=$?
