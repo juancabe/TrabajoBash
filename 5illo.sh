@@ -23,6 +23,9 @@ MESA[Oros]=""
 MESA[Espadas]=""
 MESA[Bastos]=""
 
+NUMRONDAS=0
+
+
 
 #############################
 #                           #
@@ -383,6 +386,7 @@ jugarPrincipal(){
     MESA[Oros]=""
     MESA[Espadas]=""
     MESA[Bastos]=""
+    NUMRONDAS=0
 
     crearBaraja
     repartirCartasJugadores
@@ -406,6 +410,9 @@ bucleJugar(){
 
 
     while [ $HA_GANADO -eq 0 ]; do
+
+        NUMRONDAS=$((NUMRONDAS+1))
+
         for ((k = $JUGADOR_INICIO; k < $LINEAJUGADORES; k++)); do 
             JUGADOR_INICIO=0
             echo "Jugador $((k+1))"
@@ -1074,13 +1081,13 @@ guardarLog() {
     # Guardamos el log de la partida
     case $LINEAJUGADORES in
         2)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
             ;;
         3)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
             ;;
         4)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
             ;;
     esac
 }
