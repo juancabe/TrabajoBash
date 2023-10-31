@@ -126,6 +126,12 @@ mostrarDatosTrabajo() {
     echo""
 }
 
+#############################
+#                           #
+#  FUNCIONES ESTADISTICAS   #
+#                           #
+#############################
+
 mostrarEstadisticas() {
 
     OPERACION=""
@@ -174,7 +180,7 @@ mostrarEstadisticas() {
     # Bucles para contar el número de partidas ganadas y jugadas por cada jugador
     NUMERO_PARTIDAS_JA=$NUMERO_PARTIDAS
     for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "1" ]; then
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "1" ]; then
         PARTIDAS_GANADAS_JA=$((PARTIDAS_GANADAS_JA+1))
         fi
     done
@@ -184,7 +190,7 @@ mostrarEstadisticas() {
 
     NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
     for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "2" ]; then
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "2" ]; then
         PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
         fi
     done
@@ -196,7 +202,7 @@ mostrarEstadisticas() {
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
         NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
         fi
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "3" ]; then
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "3" ]; then
             PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
         fi
     done
@@ -212,7 +218,7 @@ mostrarEstadisticas() {
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
         NUMERO_PARTIDAS_JD=$((NUMERO_PARTIDAS_JD+1))
         fi
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "4" ]; then
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "4" ]; then
             PARTIDAS_GANADAS_JD=$((PARTIDAS_GANADAS_JD+1))
         fi
     done
@@ -1065,6 +1071,8 @@ guardarLog() {
     HORA=$(date +"%H:%M:%S")
     GANADOR=$1
     TIEMPOTOTAL=$((TIEMPOFINAL-TIEMPOINICIO))
+    NUMCARTASJUGADORES=()
+
     if [ $TIEMPOTOTAL -lt 0 ]; then
         TIEMPOTOTAL=$((60+TIEMPOTOTAL))
     fi
@@ -1076,21 +1084,255 @@ guardarLog() {
         CARTAS_JUGADOR_ARRAY=()
         IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
         TOTAL_CARTAS_RESTANTES=$((TOTAL_CARTAS_RESTANTES+${#CARTAS_JUGADOR_ARRAY[@]}))
+        NUMCARTASJUGADORES[n]=${#CARTAS_JUGADOR_ARRAY[@]}
     done
+
+    # Recuperamos el numero de cartas restantes de cada jugador
+
+    
+
+
+
 
     # Guardamos el log de la partida
     case $LINEAJUGADORES in
         2)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${NUMCARTASJUGADORES[0]}-${NUMCARTASJUGADORES[1]}-*-*" >> "$LINEALOGS"
             ;;
         3)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${NUMCARTASJUGADORES[0]}-${NUMCARTASJUGADORES[1]}-${NUMCARTASJUGADORES[2]}-*" >> "$LINEALOGS"
             ;;
         4)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${NUMCARTASJUGADORES[0]}-${NUMCARTASJUGADORES[1]}-${NUMCARTASJUGADORES[2]}-${NUMCARTASJUGADORES[3]}" >> "$LINEALOGS"
             ;;
     esac
 }
+
+#############################
+#                           #
+# FUNCIONES CLASIFICACION   #
+#                           #
+#############################
+
+
+mostrarClasificacion(){
+
+    # Función para mostrar la clasificación
+
+    # Variables
+    NUMERO_PARTIDAS=$(wc -l < "$LINEALOGS")
+    # Datos de la partida más corta
+    INDICE_PARTIDA_MAS_CORTA=0
+    # Datos de la partida más larga
+    INDICE_PARTIDA_MAS_LARGA=0
+    # Datos de la partida con más rondas
+    INDICE_PARTIDA_CON_MAS_RONDAS=0
+    # Datos de la partida con menos rondas
+    INDICE_PARTIDA_CON_MENOS_RONDAS=0
+    # Datos de la partida con mayor número de puntos obtenidos por el ganador
+    INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=0
+    # Datos de la partida en la que un jugador se ha quedado con mayor número de cartas
+    INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=0
+
+    # Obtenemos los indices de las partidas
+    obtenerIndicePartidaMasCorta
+    INDICE_PARTIDA_MAS_CORTA=$?
+
+    obtenerIndicePartidaMasLarga
+    INDICE_PARTIDA_MAS_LARGA=$?
+
+    obtenerIndicePartidaConMasRondas
+    INDICE_PARTIDA_CON_MAS_RONDAS=$?
+
+    obtenerIndicePartidaConMenosRondas
+    INDICE_PARTIDA_CON_MENOS_RONDAS=$?
+
+    obtenerIndicePartidaConMayorNumeroPuntosObtenidosPorElGanador
+    INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=$?
+
+    obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas
+    INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=$?
+
+    if (( $NUMERO_PARTIDAS == 0 )); then
+        echo "No hay partidas jugadas"
+        return 0
+    fi
+
+    # Mostramos los indices primero para debug
+
+
+    # Mostramos la clasificación
+    echo "Clasificación:"
+    echo "Partida más corta: $(sed -n "$INDICE_PARTIDA_MAS_CORTA"p "$LINEALOGS")"
+    echo "Partida más larga: $(sed -n "$INDICE_PARTIDA_MAS_LARGA"p "$LINEALOGS")"
+    echo "Partida con más rondas: $(sed -n "$INDICE_PARTIDA_CON_MAS_RONDAS"p "$LINEALOGS")"
+    echo "Partida con menos rondas: $(sed -n "$INDICE_PARTIDA_CON_MENOS_RONDAS"p "$LINEALOGS")"
+    echo "Partida con mayor número de puntos obtenidos por el ganador: $(sed -n "$INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR"p "$LINEALOGS")"
+    echo "Partida en la que un jugador se ha quedado con mayor número de cartas: $(sed -n "$INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS"p "$LINEALOGS")"
+}
+
+
+obtenerIndicePartidaMasCorta(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    TIEMPO_PARTIDA_MAS_CORTA=10000
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el tiempo de la partida
+        TIEMPO_PARTIDA=$(echo "$LINEA" | cut -d "|" -f 4)
+        # Comprobamos si el tiempo de la partida es menor que el tiempo de la partida más corta
+        if [[ $TIEMPO_PARTIDA -lt $TIEMPO_PARTIDA_MAS_CORTA ]]; then
+            # Si el tiempo de la partida es menor, guardamos el indice de la partida
+            TIEMPO_PARTIDA_MAS_CORTA=$TIEMPO_PARTIDA
+            INDICE_PARTIDA_MAS_CORTA=$i
+        fi
+    done
+
+    return $INDICE_PARTIDA_MAS_CORTA
+
+}
+
+obtenerIndicePartidaMasLarga(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    TIEMPO_PARTIDA_MAS_LARGA=0
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el tiempo de la partida
+        TIEMPO_PARTIDA=$(echo "$LINEA" | cut -d "|" -f 4)
+        # Comprobamos si el tiempo de la partida es mayor que el tiempo de la partida más larga
+        if [[ $TIEMPO_PARTIDA -gt $TIEMPO_PARTIDA_MAS_LARGA ]]; then
+            # Si el tiempo de la partida es mayor, guardamos el indice de la partida
+            TIEMPO_PARTIDA_MAS_LARGA=$TIEMPO_PARTIDA
+            INDICE_PARTIDA_MAS_LARGA=$i
+        fi
+    done
+
+
+    return $INDICE_PARTIDA_MAS_LARGA
+
+
+}
+
+obtenerIndicePartidaConMasRondas(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    NUMERO_RONDAS_PARTIDA_CON_MAS_RONDAS=0
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el numero de rondas de la partida
+        NUMERO_RONDAS_PARTIDA=$(echo "$LINEA" | cut -d "|" -f 5)
+        # Comprobamos si el numero de rondas de la partida es mayor que el numero de rondas de la partida con más rondas
+        if [[ $NUMERO_RONDAS_PARTIDA -gt $NUMERO_RONDAS_PARTIDA_CON_MAS_RONDAS ]]; then
+            # Si el numero de rondas de la partida es mayor, guardamos el indice de la partida
+            NUMERO_RONDAS_PARTIDA_CON_MAS_RONDAS=$NUMERO_RONDAS_PARTIDA
+            INDICE_PARTIDA_CON_MAS_RONDAS=$i
+        fi
+    done
+
+    return $INDICE_PARTIDA_CON_MAS_RONDAS
+
+}
+
+obtenerIndicePartidaConMenosRondas(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    NUMERO_RONDAS_PARTIDA_CON_MENOS_RONDAS=10000
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el numero de rondas de la partida
+        NUMERO_RONDAS_PARTIDA=$(echo "$LINEA" | cut -d "|" -f 5)
+        # Comprobamos si el numero de rondas de la partida es menor que el numero de rondas de la partida con menos rondas
+        if [[ $NUMERO_RONDAS_PARTIDA -lt $NUMERO_RONDAS_PARTIDA_CON_MENOS_RONDAS ]]; then
+            # Si el numero de rondas de la partida es menor, guardamos el indice de la partida
+            NUMERO_RONDAS_PARTIDA_CON_MENOS_RONDAS=$NUMERO_RONDAS_PARTIDA
+            INDICE_PARTIDA_CON_MENOS_RONDAS=$i
+        fi
+    done
+
+
+    return $INDICE_PARTIDA_CON_MENOS_RONDAS
+
+}
+
+obtenerIndicePartidaConMayorNumeroPuntosObtenidosPorElGanador(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    NUMERO_PUNTOS_GANADOR_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=0
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el numero de puntos del ganador de la partida
+        NUMERO_PUNTOS_GANADOR_PARTIDA=$(echo "$LINEA" | cut -d "|" -f 7)
+        # Comprobamos si el numero de puntos del ganador de la partida es mayor que el numero de puntos del ganador de la partida con más puntos
+        if [[ $NUMERO_PUNTOS_GANADOR_PARTIDA -gt $NUMERO_PUNTOS_GANADOR_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR ]]; then
+            # Si el numero de puntos del ganador de la partida es mayor, guardamos el indice de la partida
+            NUMERO_PUNTOS_GANADOR_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=$NUMERO_PUNTOS_GANADOR_PARTIDA
+            INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=$i
+        fi
+    done
+
+    return $INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR
+
+}
+
+obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas(){
+
+    # Primero obtenemos el numero de lineas del fichero de logs
+    NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
+    NUMERO_CARTAS_RESTANTES_JUGADOR_CMNC=0
+
+    for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
+        # Obtenemos la linea del fichero de logs
+        LINEA=$(sed -n "$i"p "$LINEALOGS")
+        # Obtenemos el numero de cartas restantes de la partida
+        NUMERO_CARTAS_RESTANTES_JUGADORES=$(echo "$LINEA" | cut -d "|" -f 8)
+
+        # Separamos el string de NUMERO_CARTAS_RESTANTES_JUGADORES en un array
+        NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY=()
+        IFS='-' read -r -a NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY <<< "$NUMERO_CARTAS_RESTANTES_JUGADORES"
+
+        # Bucle para obtener el numero de cartas restantes de cada jugador
+        for ((j=0 ; j < ${#NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY[@]} ; j++)); do
+            # Obtenemos el numero de cartas restantes del jugador
+            NUMERO_CARTAS_RESTANTES_JUGADOR=${NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY[j]}
+            # Comprobamos si NUMERO_CARTAS_RESTANTES_JUGADOR_CMNC es un * o no
+            if [[ $NUMERO_CARTAS_RESTANTES_JUGADOR == "*" ]]; then
+                continue
+            else
+                if [[ $NUMERO_CARTAS_RESTANTES_JUGADOR -gt $NUMERO_CARTAS_RESTANTES_JUGADOR_CMNC ]];then
+                    # Si el numero de cartas restantes del jugador es mayor, guardamos el indice de la partida
+                    NUMERO_CARTAS_RESTANTES_JUGADOR_CMNC=$NUMERO_CARTAS_RESTANTES_JUGADOR
+                    INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=$i
+                fi
+            fi
+        done
+
+    done
+
+
+    return $INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS
+
+
+
+}
+
+
+
 
 
 #############################
@@ -1137,6 +1379,8 @@ main() {
                 ;;
             F|f)
                 echo "CLASIFICACION"
+                clear
+                mostrarClasificacion
                 ;;
             S|s)
                 echo "SALIR"
