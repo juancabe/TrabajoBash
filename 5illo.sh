@@ -123,6 +123,108 @@ mostrarDatosTrabajo() {
     echo""
 }
 
+mostrarEstadisticas() {
+
+    OPERACION=""
+    NUMERO_PARTIDAS=$(wc -l < "$LINEALOGS")
+    NUMERO_PARTIDAS_JA=0
+    NUMERO_PARTIDAS_JB=0
+    NUMERO_PARTIDAS_JC=0
+    NUMERO_PARTIDAS_JD=0
+    PARTIDAS_GANADAS_JA=0
+    PARTIDAS_GANADAS_JB=0
+    PARTIDAS_GANADAS_JC=0
+    PARTIDAS_GANADAS_JD=0
+    RATIO_JA=0
+    RATIO_JB=0
+    RATIO_JC=0
+    RATIO_JD=0
+    TIEMPOS=()
+    TIEMPO_TOTAL=0
+    TIEMPO_MEDIO=0
+    PUNTOS=()
+    PUNTOS_TOTALES=0
+    PUNTOS_MEDIOS=0
+
+    if (( $NUMERO_PARTIDAS == 0 )); then
+        echo "No hay partidas jugadas"
+        return 0
+    fi
+
+    # Bucle for que suma los tiempos de cada partida
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        TIEMPOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 4)
+        TIEMPO_TOTAL=$((TIEMPO_TOTAL+TIEMPOS[$np]))
+    done
+    OPERACION="$TIEMPO_TOTAL/$NUMERO_PARTIDAS"
+    TIEMPO_MEDIO=$(echo "scale=2; $OPERACION" | bc -l)
+
+    # Bucle for que suma los puntos de cada partida
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        PUNTOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)
+        PUNTOS_TOTALES=$((PUNTOS_TOTALES+PUNTOS[$np]))
+    done
+    OPERACION="$PUNTOS_TOTALES/$NUMERO_PARTIDAS"
+    PUNTOS_MEDIOS=$(echo "scale=2; $OPERACION" | bc -l)
+
+
+    # Bucles para contar el número de partidas ganadas y jugadas por cada jugador
+    NUMERO_PARTIDAS_JA=$NUMERO_PARTIDAS
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "1" ]; then
+        PARTIDAS_GANADAS_JA=$((PARTIDAS_GANADAS_JA+1))
+        fi
+    done
+    OPERACION="$PARTIDAS_GANADAS_JA/$NUMERO_PARTIDAS_JA"
+    RATIO_JA=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JA=$(echo "$RATIO_JA * 100" | bc)
+
+    NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "2" ]; then
+        PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
+        fi
+    done
+    OPERACION="$PARTIDAS_GANADAS_JB/$NUMERO_PARTIDAS_JB"
+    RATIO_JB=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
+
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
+        NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "3" ]; then
+            PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
+        fi
+    done
+    OPERACION="$PARTIDAS_GANADAS_JC/$NUMERO_PARTIDAS_JC"
+    RATIO_JC=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
+
+    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
+        NUMERO_PARTIDAS_JD=$((NUMERO_PARTIDAS_JD+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "4" ]; then
+            PARTIDAS_GANADAS_JD=$((PARTIDAS_GANADAS_JD+1))
+        fi
+    done
+    OPERACION="$PARTIDAS_GANADAS_JD/$NUMERO_PARTIDAS_JD"
+    RATIO_JD=$(echo "scale=2; $OPERACION" | bc -l)
+    RATIO_JD=$(echo "$RATIO_JD * 100" | bc)
+
+    echo "Número total de partidas jugadas: $NUMERO_PARTIDAS"
+    echo "Media de los tiempos de todas las partidas jugadas: $TIEMPO_MEDIO"
+    echo "Tiempo total invertido en todas las partidas: $TIEMPO_TOTAL"
+    echo "Media de los puntos obtenidos por el ganador en todas las partidas: $PUNTOS_MEDIOS"
+    echo "Porcentaje de partidas ganadas del jugador A (respecto a las jugadas por A): $PARTIDAS_GANADAS_JA entre $NUMERO_PARTIDAS_JA dan $RATIO_JA%"
+    echo "Porcentaje de partidas ganadas del jugador B (respecto a las jugadas por B): $PARTIDAS_GANADAS_JB entre $NUMERO_PARTIDAS_JB dan $RATIO_JB%"
+    echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): $PARTIDAS_GANADAS_JC entre $NUMERO_PARTIDAS_JC dan $RATIO_JC%"
+    echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): $PARTIDAS_GANADAS_JD entre $NUMERO_PARTIDAS_JD dan $RATIO_JD%"
+    echo ""
+    read -p "Pulse INTRO para continuar..."
+}
+
 
 #############################
 #                           #
@@ -1000,6 +1102,7 @@ main() {
                 ;;
             E|e)
                 echo "ESTADISTICAS"
+                mostrarEstadisticas
                 ;;
             F|f)
                 echo "CLASIFICACION"
