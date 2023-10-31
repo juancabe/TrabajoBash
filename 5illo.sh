@@ -76,6 +76,54 @@ compruebaConfig() {
         exit 1
     fi
 }
+
+mostrarDatosTrabajo() {
+
+    clear
+    echo""
+    echo "     **************************************************************************"
+    echo "     *                                                                        *"
+    echo "     *          NOMBRE DEL SCRIPT: 5illo.sh                                   *"
+    echo "     *          AUTORES:  Juan CALZADA BERNAL y Hugo CHALARD COLLADO          *"
+    echo "     *          GRUPO: PA3 de la asignatura SSOO                              *"
+    echo "     *                                                                        *"
+    echo "     *          DESCRIPCIÓN: Script que simula el juego del 5illo.            *"
+    echo "     *                                                                        *"
+    echo "     **************************************************************************"
+    echo""
+    echo""
+    echo "     **************************************************************************"
+    echo "     *                                                                        *"
+    echo "     *    DESCRIPCION DE LA ESTRATEGIA 0:                                     *"
+    echo "     *                                                                        *"
+    echo "     *    En esta estrategia, los jugadores automatizados juegan de forma     *"
+    echo "     *    aleatoria.                                                          *"
+    echo "     *                                                                        *"
+    echo "     *                                                                        *"
+    echo "     *    DESCRIPCION DE LA ESTRATEGIA 1:                                     *"
+    echo "     *                                                                        *"
+    echo "     *    En esta estrategia, los jugadores automatizados priorizan colocar   *"
+    echo "     *    cartas de las cuales tienen la siguiente, así aseguran que no       *"
+    echo "     *    facilitan a los demás colocar.                                      *"
+    echo "     *                                                                        *"
+    echo "     *                                                                        *"
+    echo "     *    DESCRIPCION DE LA ESTRATEGIA 2:                                     *"
+    echo "     *                                                                        *"
+    echo "     *    En esta estrategia, los jugadores automatizados priorizan colocar   *"
+    echo "     *    un rey o un uno, si esto no es posible, miran a ver si tienen un    *"
+    echo "     *    5 y de ese palo cartas cercanas al límite (sota, caballo, rey o     *"
+    echo "     *    uno, dos) y no las intermedias (tres, cuatro, seis y siete)         *"
+    echo "     *    si es así, colocan el 5, ya que van a necesitar que los demás       *"
+    echo "     *    coloquen cartas intermedias para poder colocar las suyas.           *"
+    echo "     *    si tienen esas cartas intermedias, no colocan el 5.                 *"
+    echo "     *    En caso de no tener un 5, aplican la estrategia 1.                  *"
+    echo "     *                                                                        *"
+    echo "     **************************************************************************"
+    echo""
+    echo""
+}
+
+
 #############################
 #                           #
 # FUNCIONES CONFIGURACION   #
@@ -193,39 +241,6 @@ opcionConfiguracion(){
         esac
         read -p "Pulse INTRO para continuar..."
     done
-}
-
-guardarLog() {
-
-    # Función que guarda el log de la partida
-
-    # Variables
-    FECHA=$(date +"%d-%m-%Y")
-    HORA=$(date +"%H:%M:%S")
-    GANADOR=$1
-    TIEMPOTOTAL=$((TIEMPOFINAL-TIEMPOINICIO))
-    TOTAL_CARTAS_RESTANTES=0
-    
-    # Recuperamos las cartas restantes de cada jugador teniendo en cuenta el numero de jugadores (Indicado en LINEAJUGADORES)
-    for ((n=0 ; n < $LINEAJUGADORES ; n++)); do
-        CARTAS_JUGADOR=${JUGADORES[n]}
-        CARTAS_JUGADOR_ARRAY=()
-        IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
-        TOTAL_CARTAS_RESTANTES=$((TOTAL_CARTAS_RESTANTES+${#CARTAS_JUGADOR_ARRAY[@]}))
-    done
-
-    # Guardamos el log de la partida
-    case $LINEAJUGADORES in
-        2)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
-            ;;
-        3)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
-            ;;
-        4)
-            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
-            ;;
-    esac
 }
 
 #############################  de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|"
@@ -716,7 +731,7 @@ estrategia2(){
     # si es así, colocamos el 5, ya que vamos a necesitar que los demás
     # coloquen cartas intermedias para poder colocar las nuestras
     # si tenemos esas cartas intermedias, no colocamos el 5
-    # En caso de no tener un 5, colocamos una carta aleatoria
+    # En caso de no tener un 5, aplicamos la estrategia 1
     # así aseguramos que no facilitamos a los demás colocar.
 
     #Variables
@@ -911,6 +926,40 @@ crearBaraja(){
 
 }
 
+guardarLog() {
+
+    # Función que guarda el log de la partida
+
+    # Variables
+    FECHA=$(date +"%d-%m-%Y")
+    HORA=$(date +"%H:%M:%S")
+    GANADOR=$1
+    TIEMPOTOTAL=$((TIEMPOFINAL-TIEMPOINICIO))
+    TOTAL_CARTAS_RESTANTES=0
+    
+    # Recuperamos las cartas restantes de cada jugador teniendo en cuenta el numero de jugadores (Indicado en LINEAJUGADORES)
+    for ((n=0 ; n < $LINEAJUGADORES ; n++)); do
+        CARTAS_JUGADOR=${JUGADORES[n]}
+        CARTAS_JUGADOR_ARRAY=()
+        IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+        TOTAL_CARTAS_RESTANTES=$((TOTAL_CARTAS_RESTANTES+${#CARTAS_JUGADOR_ARRAY[@]}))
+    done
+
+    # Guardamos el log de la partida
+    case $LINEAJUGADORES in
+        2)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
+            ;;
+        3)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
+            ;;
+        4)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
+            ;;
+    esac
+}
+
+
 #############################
 #                           #
 #            MAIN           #
@@ -975,7 +1024,7 @@ main() {
 
 if [ ! -z $2 ]
 then
-    echo "No se admiten más de un parámetro"
+    echo "No se admiten más de un argumento"
     exit 1
 fi
 if [ -z $1 ]
@@ -983,8 +1032,8 @@ then
     main
 elif [ $1 == -g ] 
 then
-    echo "El primer parámetro es -g"
+    mostrarDatosTrabajo
 elif [ $1 != -g ]
 then
-    echo "El parámetro $1 no es válido"
+    echo "El argumento $1 no es válido, intente poner -g o quitarlo"
 fi
