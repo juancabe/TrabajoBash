@@ -10,7 +10,7 @@ BARAJA=()
 JUGADORES=()
 MESA=()
 TIEMPOINICIO=0
-TIEMPOFIN=0
+TIEMPOFINAL=0
 
 #Iniciamos la mesa
 Copas=1
@@ -152,7 +152,7 @@ mostrarEstadisticas() {
     fi
 
     # Bucle for que suma los tiempos de cada partida
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         TIEMPOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 4)
         TIEMPO_TOTAL=$((TIEMPO_TOTAL+TIEMPOS[$np]))
     done
@@ -160,7 +160,7 @@ mostrarEstadisticas() {
     TIEMPO_MEDIO=$(echo "scale=2; $OPERACION" | bc -l)
 
     # Bucle for que suma los puntos de cada partida
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         PUNTOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)
         PUNTOS_TOTALES=$((PUNTOS_TOTALES+PUNTOS[$np]))
     done
@@ -170,7 +170,7 @@ mostrarEstadisticas() {
 
     # Bucles para contar el número de partidas ganadas y jugadas por cada jugador
     NUMERO_PARTIDAS_JA=$NUMERO_PARTIDAS
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "1" ]; then
         PARTIDAS_GANADAS_JA=$((PARTIDAS_GANADAS_JA+1))
         fi
@@ -180,7 +180,7 @@ mostrarEstadisticas() {
     RATIO_JA=$(echo "$RATIO_JA * 100" | bc)
 
     NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 5)" == "2" ]; then
         PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
         fi
@@ -189,7 +189,7 @@ mostrarEstadisticas() {
     RATIO_JB=$(echo "scale=2; $OPERACION" | bc)
     RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
 
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
         NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
         fi
@@ -205,7 +205,7 @@ mostrarEstadisticas() {
         RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
     fi
 
-    for ((np=0 ; np <= $NUMERO_PARTIDAS ; np++)); do
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
         NUMERO_PARTIDAS_JD=$((NUMERO_PARTIDAS_JD+1))
         fi
@@ -1058,6 +1058,9 @@ guardarLog() {
     HORA=$(date +"%H:%M:%S")
     GANADOR=$1
     TIEMPOTOTAL=$((TIEMPOFINAL-TIEMPOINICIO))
+    if [ $TIEMPOTOTAL -lt 0 ]; then
+        TIEMPOTOTAL=$((60+TIEMPOTOTAL))
+    fi
     TOTAL_CARTAS_RESTANTES=0
     
     # Recuperamos las cartas restantes de cada jugador teniendo en cuenta el numero de jugadores (Indicado en LINEAJUGADORES)
@@ -1115,10 +1118,10 @@ main() {
                 ;;
             J|j)
                 echo "JUGAR"
-                TIEMPOINICIO=$(date +%s)
+                TIEMPOINICIO=$(date +"%S")
                 jugarPrincipal
                 JGANADORMAIN=$?
-                TIEMPOFINAL=$(date +%s)
+                TIEMPOFINAL=$(date +"%S")
                 guardarLog $JGANADORMAIN
                 ;;
             E|e)
