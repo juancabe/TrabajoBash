@@ -2,7 +2,6 @@
 
 
 #Variables globales
-
 CONFIG_FILE="./config.cfg"
 LINEAJUGADORES=""
 LINEAESTRATEGIAS=""
@@ -10,6 +9,9 @@ LINEALOGS=""
 BARAJA=()
 JUGADORES=()
 MESA=()
+TIEMPOINICIO=0
+TIEMPOFIN=0
+
 #Iniciamos la mesa
 Copas=1
 Oros=2
@@ -167,8 +169,7 @@ opcionConfiguracion(){
         echo "B)CONFIGURAR ESTRATEGIAS"
         echo "C)CONFIGURAR LOGS"
         echo "S)SALIR"
-        echo "“5illo”. Introduzca una opción >>"
-        read opcion
+        read -p "“5illo”. Introduzca una opción >> " opcion 
         case $opcion in
             A|a)
                 echo "CONFIGURAR JUGADORES"
@@ -192,10 +193,39 @@ opcionConfiguracion(){
         esac
         read -p "Pulse INTRO para continuar..."
     done
+}
 
+guardarLog() {
 
+    # Función que guarda el log de la partida
 
+    # Variables
+    FECHA=$(date +"%d-%m-%Y")
+    HORA=$(date +"%H:%M:%S")
+    GANADOR=$1
+    TIEMPOTOTAL=$((TIEMPOFINAL-TIEMPOINICIO))
+    TOTAL_CARTAS_RESTANTES=0
+    
+    # Recuperamos las cartas restantes de cada jugador teniendo en cuenta el numero de jugadores (Indicado en LINEAJUGADORES)
+    for ((n=0 ; n < $LINEAJUGADORES ; n++)); do
+        CARTAS_JUGADOR=${JUGADORES[n]}
+        CARTAS_JUGADOR_ARRAY=()
+        IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+        TOTAL_CARTAS_RESTANTES=$((TOTAL_CARTAS_RESTANTES+${#CARTAS_JUGADOR_ARRAY[@]}))
+    done
 
+    # Guardamos el log de la partida
+    case $LINEAJUGADORES in
+        2)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-*-*" >> "$LINEALOGS"
+            ;;
+        3)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-*" >> "$LINEALOGS"
+            ;;
+        4)
+            echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${JUGADORES[0]}-${JUGADORES[1]}-${JUGADORES[2]}-${JUGADORES[3]}" >> "$LINEALOGS"
+            ;;
+    esac
 }
 
 #############################  de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|"
@@ -220,7 +250,8 @@ jugarPrincipal(){
     repartirCartasJugadores
     mostrarJugadores
     bucleJugar
-
+    JGANADOR=$?
+    return $JGANADOR
 }
 
 bucleJugar(){
@@ -261,7 +292,7 @@ bucleJugar(){
             haGanado $k
             HA_GANADO=$?
             if [ $HA_GANADO -eq 1 ]; then
-                break
+                return $k
             fi
 
         done
@@ -311,7 +342,7 @@ jugarIterativo(){
 
         # Comprobamos que la carta sea válida
 
-        if [ $CARTA -lt 0 ] || [ $CARTA -gt ${#CARTAS_JUGADOR_ARRAY[@]} ]; then
+        if [ $CARTA -lt 0 ] || [ $CARTA -gt $((${#CARTAS_JUGADOR_ARRAY[@]}-1)) ]; then
             echo "La carta no es válida"
             continue
         else
@@ -904,8 +935,7 @@ main() {
         echo "E)ESTADISTICAS"
         echo "F)CLASIFICACION"
         echo "S)SALIR"
-        echo "“5illo”. Introduzca una opción >>"
-        read opcion
+        read -p "“5illo”. Introduzca una opción >> " opcion
         case $opcion in
             C|c)
                 echo "CONFIGURACION"
@@ -913,7 +943,11 @@ main() {
                 ;;
             J|j)
                 echo "JUGAR"
+                TIEMPOINICIO=$(date +%s)
                 jugarPrincipal
+                JGANADORMAIN=$?
+                TIEMPOFINAL=$(date +%s)
+                guardarLog $JGANADORMAIN
                 ;;
             E|e)
                 echo "ESTADISTICAS"
@@ -947,10 +981,10 @@ fi
 if [ -z $1 ]
 then
     main
-elif [ $1 = -g ] 
+elif [ $1 == -g ] 
 then
     echo "El primer parámetro es -g"
 elif [ $1 != -g ]
 then
-    echo "El primer parámetro es inválido"
+    echo "El parámetro $1 no es válido"
 fi
