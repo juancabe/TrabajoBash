@@ -1022,13 +1022,54 @@ repartirCartasJugadores(){
 }
 
 mostrarJugadores(){
-    
     # Función que muestra los jugadores por pantalla
+    # Sustituyendo los 8,9,10 por sota, caballo, rey; respectivamente.
+    
+    # Variables
+    JUGADOR_ID_MOSTRAR=0
+    CARTAS_JUGADOR_MOSTRAR=""
+    CARTAS_JUGADOR_MOSTRAR_ARRAY=()
 
-    for ((i = 0; i < LINEAJUGADORES; i++)); do
-        echo "Jugador $((i+1)): ${JUGADORES[i]}"
+    # Bucle para mostrar los jugadores
+
+    for ((iMostrar = 0; iMostrar < ${#JUGADORES[@]}; iMostrar++)); do
+        JUGADOR_ID_MOSTRAR=$iMostrar
+        CARTAS_JUGADOR_MOSTRAR=${JUGADORES[JUGADOR_ID_MOSTRAR]}
+        CARTAS_JUGADOR_MOSTRAR_ARRAY=()
+        IFS='|' read -r -a CARTAS_JUGADOR_MOSTRAR_ARRAY <<< "$CARTAS_JUGADOR_MOSTRAR"
+
+        # Mostramos el jugador
+        echo -n "Jugador $((JUGADOR_ID_MOSTRAR+1)):"
+
+        # Bucle para sustituir los 8,9,10 por sota, caballo, rey; respectivamente.
+        for ((jMostrar = 0; jMostrar < ${#CARTAS_JUGADOR_MOSTRAR_ARRAY[@]}; jMostrar++)); do
+            # Obtenemos el número de la carta
+            NUMERO_CARTA_MOSTRAR=${CARTAS_JUGADOR_MOSTRAR_ARRAY[jMostrar]%% *}
+            # Obtenemos el palo de la carta
+            PALO_CARTA=${CARTAS_JUGADOR_MOSTRAR_ARRAY[jMostrar]##* }
+            # Sustituimos el número de la carta
+            case $NUMERO_CARTA_MOSTRAR in
+                8)
+                    NUMERO_CARTA_MOSTRAR="Sota"
+                    ;;
+                9)
+                    NUMERO_CARTA_MOSTRAR="Caballo"
+                    ;;
+                10)
+                    NUMERO_CARTA_MOSTRAR="Rey"
+                    ;;
+            esac
+            # Mostramos la carta seguida de |
+            echo -n "$NUMERO_CARTA_MOSTRAR de $PALO_CARTA|"
+        done
+        echo ""
+
     done
+
+
 }
+
+
 
 crearBaraja(){
 
