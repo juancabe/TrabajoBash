@@ -11,6 +11,7 @@ JUGADORES=()
 MESA=()
 TIEMPOINICIO=0
 TIEMPOFINAL=0
+NUMRONDAS=0
 
 #Iniciamos la mesa
 Copas=1
@@ -23,15 +24,13 @@ MESA[Oros]=""
 MESA[Espadas]=""
 MESA[Bastos]=""
 
-NUMRONDAS=0
-
-
 
 #############################
 #                           #
 #      FUNCIONES MAIN       #
 #                           #
 #############################
+
 
 compruebaConfig() {
     # Variables
@@ -126,145 +125,13 @@ mostrarDatosTrabajo() {
     echo""
 }
 
-#############################
-#                           #
-#  FUNCIONES ESTADISTICAS   #
-#                           #
-#############################
-
-mostrarEstadisticas() {
-
-    OPERACION=""
-    NUMERO_PARTIDAS=$(wc -l < "$LINEALOGS")
-    NUMERO_PARTIDAS_JA=0
-    NUMERO_PARTIDAS_JB=0
-    NUMERO_PARTIDAS_JC=0
-    NUMERO_PARTIDAS_JD=0
-    PARTIDAS_GANADAS_JA=0
-    PARTIDAS_GANADAS_JB=0
-    PARTIDAS_GANADAS_JC=0
-    PARTIDAS_GANADAS_JD=0
-    RATIO_JA=0
-    RATIO_JB=0
-    RATIO_JC=0
-    RATIO_JD=0
-    TIEMPOS=()
-    TIEMPO_TOTAL=0
-    TIEMPO_MEDIO=0
-    PUNTOS=()
-    PUNTOS_TOTALES=0
-    PUNTOS_MEDIOS=0
-
-    if (( $NUMERO_PARTIDAS == 0 )); then
-        echo "No hay partidas jugadas"
-        return 0
-    fi
-
-    # Bucle for que suma los tiempos de cada partida
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        TIEMPOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 4)
-        TIEMPO_TOTAL=$((TIEMPO_TOTAL+TIEMPOS[$np]))
-    done
-    OPERACION="$TIEMPO_TOTAL/$NUMERO_PARTIDAS"
-    TIEMPO_MEDIO=$(echo "scale=2; $OPERACION" | bc -l)
-
-    # Bucle for que suma los puntos de cada partida
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        PUNTOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)
-        PUNTOS_TOTALES=$((PUNTOS_TOTALES+PUNTOS[$np]))
-    done
-    OPERACION="$PUNTOS_TOTALES/$NUMERO_PARTIDAS"
-    PUNTOS_MEDIOS=$(echo "scale=2; $OPERACION" | bc -l)
-
-
-    # Bucles para contar el número de partidas ganadas y jugadas por cada jugador
-    NUMERO_PARTIDAS_JA=$NUMERO_PARTIDAS
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "1" ]; then
-        PARTIDAS_GANADAS_JA=$((PARTIDAS_GANADAS_JA+1))
-        fi
-    done
-    OPERACION="$PARTIDAS_GANADAS_JA/$NUMERO_PARTIDAS_JA"
-    RATIO_JA=$(echo "scale=2; $OPERACION" | bc)
-    RATIO_JA=$(echo "$RATIO_JA * 100" | bc)
-
-    NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "2" ]; then
-            PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
-        fi
-    done
-
-    OPERACION="$PARTIDAS_GANADAS_JB/$NUMERO_PARTIDAS_JB"
-    RATIO_JB=$(echo "scale=2; $OPERACION" | bc)
-    RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
-
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
-            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
-        fi
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
-            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
-        fi
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "3" ]; then
-            PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
-        fi
-    done
-    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
-        RATIO_JC=0
-    else
-        OPERACION="$PARTIDAS_GANADAS_JC/$NUMERO_PARTIDAS_JC"
-        RATIO_JC=$(echo "scale=2; $OPERACION" | bc)
-        RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
-    fi
-
-    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
-        NUMERO_PARTIDAS_JD=$((NUMERO_PARTIDAS_JD+1))
-        fi
-        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "4" ]; then
-            PARTIDAS_GANADAS_JD=$((PARTIDAS_GANADAS_JD+1))
-        fi
-    done
-    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
-        RATIO_JD=0
-    else
-        OPERACION="$PARTIDAS_GANADAS_JD/$NUMERO_PARTIDAS_JD"
-        RATIO_JD=$(echo "scale=2; $OPERACION" | bc)
-        RATIO_JD=$(echo "$RATIO_JD * 100" | bc)
-    fi
-
-    # Ahora quitamos los decimales a los porcentajes
-    RATIO_JA=${RATIO_JA%.*}
-    RATIO_JB=${RATIO_JB%.*}
-    RATIO_JC=${RATIO_JC%.*}
-    RATIO_JD=${RATIO_JD%.*}
-
-    echo "Número total de partidas jugadas: $NUMERO_PARTIDAS"
-    echo "Media de los tiempos de todas las partidas jugadas: $TIEMPO_MEDIO"
-    echo "Tiempo total invertido en todas las partidas: $TIEMPO_TOTAL"
-    echo "Media de los puntos obtenidos por el ganador en todas las partidas: $PUNTOS_MEDIOS"
-    echo "Porcentaje de partidas ganadas del jugador A (respecto a las jugadas por A): $RATIO_JA%"
-    echo "Porcentaje de partidas ganadas del jugador B (respecto a las jugadas por B): $RATIO_JB%"
-    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
-        echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): No ha jugado ninguna partida"
-    else
-        echo "Porcentaje de partidas ganadas del jugador C (respecto a las jugadas por C): $RATIO_JC%"
-    fi
-    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
-        echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): No ha jugado ninguna partida"
-    else
-        echo "Porcentaje de partidas ganadas del jugador D (respecto a las jugadas por D): $RATIO_JD%"
-    fi
-    echo ""
-}
-
 
 #############################
 #                           #
 # FUNCIONES CONFIGURACION   #
 #                           #
 #############################
+
 
 configurarJugadores(){
 
@@ -337,7 +204,6 @@ configurarEstrategias(){
     # Cambiamos el valor de la variable ESTRATEGIA en el archivo de configuración
     sed "s/ESTRATEGIA=$LINEAESTRATEGIAS/ESTRATEGIA=$estrategia/g" "$CONFIG_FILE" > tmpfile && mv tmpfile "$CONFIG_FILE"
     LINEAESTRATEGIAS=$estrategia
-
 }
 
 opcionConfiguracion(){
@@ -379,11 +245,13 @@ opcionConfiguracion(){
     done
 }
 
+
 #############################  de la forma {Cartas de oros} = "1 Oros|2 Oros|3 Oros|4 Oros|"
 #                           #   Para i elementos en MESA: MESA[Oros] = {Cartas de oros},
 #      FUNCIONES JUGAR      #                             MESA[Copas] = {Cartas de copas}, 
 #                           #                             MESA[Espadas] = {Cartas de espadas}, 
 #############################                             MESA[Bastos] = {Cartas de bastos}
+
 
 jugarPrincipal(){   
 
@@ -452,7 +320,6 @@ bucleJugar(){
 
         done
     done
-
 }
 
 jugarIterativo(){
@@ -518,19 +385,19 @@ jugarIterativo(){
 
 haGanado() {
     
-        # Función que comprueba si un jugador ha ganado
-    
-        # Variables
-        JUGADOR_ID_haGanado=$1
-        CARTAS_JUGADOR=${JUGADORES[JUGADOR_ID_haGanado]} # Obtenemos las cartas del Jugador
-        CARTAS_JUGADOR_ARRAY=()
-        IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
-    
-        if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
-            return 1
-        else
-            return 0
-        fi
+    # Función que comprueba si un jugador ha ganado
+
+    # Variables
+    JUGADOR_ID_haGanado=$1
+    CARTAS_JUGADOR=${JUGADORES[JUGADOR_ID_haGanado]} # Obtenemos las cartas del Jugador
+    CARTAS_JUGADOR_ARRAY=()
+    IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
+
+    if [ ${#CARTAS_JUGADOR_ARRAY[@]} -eq 0 ]; then
+        return 1
+    else
+        return 0
+    fi
 }
 
 mostrarMesa(){
@@ -614,8 +481,7 @@ colocarCincoOrosInicio(){
         JUGADOR_ID=$((JUGADOR_ID+1))
     fi
 
-    return $JUGADOR_ID
-    
+    return $JUGADOR_ID 
 }
 
 colocarCarta(){
@@ -673,8 +539,6 @@ colocarCarta(){
     fi
 
     eliminarCartaDeJugador $CARTAa $PALOoo
-
-    
 }
 
 eliminarCartaDeJugador(){
@@ -695,7 +559,6 @@ eliminarCartaDeJugador(){
     done
 
     mostrarJugadores
-
 }
 
 sePuedeColocar(){
@@ -756,7 +619,6 @@ sePuedeColocar(){
 
     echo "Función sePuedeColocar: Error inesperado"
     return -1
-
 }
 
 puedeJugar(){
@@ -783,7 +645,6 @@ puedeJugar(){
     done
 
     return 1
-
 }
 
 estrategia0(){
@@ -1057,8 +918,6 @@ repartirCartasJugadores(){
         JUGADORES[JUGADOR_ID]+="$CARTA|"
         ((CONTADOR++))
     done
-
-
 }
 
 mostrarJugadores(){
@@ -1106,11 +965,7 @@ mostrarJugadores(){
 
     done
     echo ""
-
-
 }
-
-
 
 crearBaraja(){
 
@@ -1145,7 +1000,6 @@ crearBaraja(){
         BARAJA[$NUMERO_ALEATORIO]=${BARAJA[$i]}
         BARAJA[$i]=$CARTA_TEMPORAL
     done
-
 }
 
 guardarLog() {
@@ -1173,13 +1027,6 @@ guardarLog() {
         NUMCARTASJUGADORES[n]=${#CARTAS_JUGADOR_ARRAY[@]}
     done
 
-    # Recuperamos el numero de cartas restantes de cada jugador
-
-    
-
-
-
-
     # Guardamos el log de la partida
     case $LINEAJUGADORES in
         2)
@@ -1193,6 +1040,7 @@ guardarLog() {
             ;;
     esac
 }
+
 
 #############################
 #                           #
@@ -1219,6 +1067,15 @@ mostrarClasificacion(){
     INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=0
     # Datos de la partida en la que un jugador se ha quedado con mayor número de cartas
     INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=0
+    
+    # Comprobamos si hay partidas jugadas
+    if (( $NUMERO_PARTIDAS == 0 )); then
+        echo "No hay partidas jugadas"
+        return 0
+    fi
+
+    # Por si tarda mucho, imprimimos un mensaje
+    echo "Calculando la clasificación con $NUMERO_PARTIDAS partidas..."
 
     # Obtenemos los indices de las partidas
     obtenerIndicePartidaMasCorta
@@ -1239,22 +1096,157 @@ mostrarClasificacion(){
     obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas
     INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=$?
 
-    if (( $NUMERO_PARTIDAS == 0 )); then
-        echo "No hay partidas jugadas"
-        return 0
-    fi
-
     # Mostramos los indices primero para debug
 
 
     # Mostramos la clasificación
-    echo "Clasificación:"
-    echo "Partida más corta: $(sed -n "$INDICE_PARTIDA_MAS_CORTA"p "$LINEALOGS")"
-    echo "Partida más larga: $(sed -n "$INDICE_PARTIDA_MAS_LARGA"p "$LINEALOGS")"
-    echo "Partida con más rondas: $(sed -n "$INDICE_PARTIDA_CON_MAS_RONDAS"p "$LINEALOGS")"
-    echo "Partida con menos rondas: $(sed -n "$INDICE_PARTIDA_CON_MENOS_RONDAS"p "$LINEALOGS")"
-    echo "Partida con mayor número de puntos obtenidos por el ganador: $(sed -n "$INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR"p "$LINEALOGS")"
-    echo "Partida en la que un jugador se ha quedado con mayor número de cartas: $(sed -n "$INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS"p "$LINEALOGS")"
+    clear
+    echo""
+    echo "     ****************************************************************************************************************************"
+    echo "     *                                                                                                                          *"
+    echo "     *          CLASIFICACIÓN                                                                                                   *"
+    echo "     *                                                                                                                          *"
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_MAS_CORTA"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                              *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                             *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                            *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                           *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                         *"
+    else
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                        *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_MAS_LARGA"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                              *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                             *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                            *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                           *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                         *"
+    else
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                        *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MAS_RONDAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                         *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                        *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                     *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                    *"
+    else
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                   *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MENOS_RONDAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                     *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                    *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                   *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                  *"
+    else
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                 *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                    *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                   *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                  *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                 *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR               *"
+    else
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR              *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR         *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR        *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR     *"
+    else
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR    *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    echo "     ****************************************************************************************************************************"
+    echo""
 }
 
 
@@ -1278,14 +1270,13 @@ obtenerIndicePartidaMasCorta(){
     done
 
     return $INDICE_PARTIDA_MAS_CORTA
-
 }
 
 obtenerIndicePartidaMasLarga(){
 
     # Primero obtenemos el numero de lineas del fichero de logs
     NUMERO_LINEAS=$(wc -l < "$LINEALOGS")
-    TIEMPO_PARTIDA_MAS_LARGA=0
+    TIEMPO_PARTIDA_MAS_LARGA=-1
 
     for ((i=1 ; i <= $NUMERO_LINEAS ; i++)); do
         # Obtenemos la linea del fichero de logs
@@ -1302,8 +1293,6 @@ obtenerIndicePartidaMasLarga(){
 
 
     return $INDICE_PARTIDA_MAS_LARGA
-
-
 }
 
 obtenerIndicePartidaConMasRondas(){
@@ -1326,7 +1315,6 @@ obtenerIndicePartidaConMasRondas(){
     done
 
     return $INDICE_PARTIDA_CON_MAS_RONDAS
-
 }
 
 obtenerIndicePartidaConMenosRondas(){
@@ -1350,7 +1338,6 @@ obtenerIndicePartidaConMenosRondas(){
 
 
     return $INDICE_PARTIDA_CON_MENOS_RONDAS
-
 }
 
 obtenerIndicePartidaConMayorNumeroPuntosObtenidosPorElGanador(){
@@ -1373,7 +1360,6 @@ obtenerIndicePartidaConMayorNumeroPuntosObtenidosPorElGanador(){
     done
 
     return $INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR
-
 }
 
 obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas(){
@@ -1396,7 +1382,7 @@ obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas(){
         for ((j=0 ; j < ${#NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY[@]} ; j++)); do
             # Obtenemos el numero de cartas restantes del jugador
             NUMERO_CARTAS_RESTANTES_JUGADOR=${NUMERO_CARTAS_RESTANTES_JUGADORES_ARRAY[j]}
-            # Comprobamos si NUMERO_CARTAS_RESTANTES_JUGADOR_CMNC es un * o no
+            # Comprobamos si NUMERO_CARTAS_RESTANTES_JUGADOR es un * o no
             if [[ $NUMERO_CARTAS_RESTANTES_JUGADOR == "*" ]]; then
                 continue
             else
@@ -1412,13 +1398,197 @@ obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas(){
 
 
     return $INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS
-
-
-
 }
 
 
+#############################
+#                           #
+#  FUNCIONES ESTADISTICAS   #
+#                           #
+#############################
 
+
+mostrarEstadisticas() {
+
+    OPERACION=""
+    NUMERO_PARTIDAS=$(wc -l < "$LINEALOGS")
+    NUMERO_PARTIDAS_JA=0
+    NUMERO_PARTIDAS_JB=0
+    NUMERO_PARTIDAS_JC=0
+    NUMERO_PARTIDAS_JD=0
+    PARTIDAS_GANADAS_JA=0
+    PARTIDAS_GANADAS_JB=0
+    PARTIDAS_GANADAS_JC=0
+    PARTIDAS_GANADAS_JD=0
+    RATIO_JA=0
+    RATIO_JB=0
+    RATIO_JC=0
+    RATIO_JD=0
+    TIEMPOS=()
+    TIEMPO_TOTAL=0
+    TIEMPO_MEDIO=0
+    PUNTOS=()
+    PUNTOS_TOTALES=0
+    PUNTOS_MEDIOS=0
+
+    # Comprobamos si hay partidas jugadas
+    if (( $NUMERO_PARTIDAS == 0 )); then
+        echo "No hay partidas jugadas"
+        return 0
+    fi
+
+    # Por si tarda mucho, imprimimos un mensaje
+    echo "Calculando las estadísticas con $NUMERO_PARTIDAS partidas..."
+
+    # Bucle for que suma los tiempos de cada partida
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        TIEMPOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 4)
+        TIEMPO_TOTAL=$((TIEMPO_TOTAL+TIEMPOS[$np]))
+    done
+    OPERACION="$TIEMPO_TOTAL/$NUMERO_PARTIDAS"
+    TIEMPO_MEDIO=$(echo "scale=2; $OPERACION" | bc -l)
+
+    # Bucle for que suma los puntos de cada partida
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        PUNTOS[$np]=$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 7)
+        PUNTOS_TOTALES=$((PUNTOS_TOTALES+PUNTOS[$np]))
+    done
+    OPERACION="$PUNTOS_TOTALES/$NUMERO_PARTIDAS"
+    PUNTOS_MEDIOS=$(echo "scale=2; $OPERACION" | bc -l)
+
+
+    # Bucles para contar el número de partidas ganadas y jugadas por cada jugador
+    NUMERO_PARTIDAS_JA=$NUMERO_PARTIDAS
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "1" ]; then
+        PARTIDAS_GANADAS_JA=$((PARTIDAS_GANADAS_JA+1))
+        fi
+    done
+    OPERACION="$PARTIDAS_GANADAS_JA/$NUMERO_PARTIDAS_JA"
+    RATIO_JA=$(echo "scale=2; $OPERACION" | bc)
+    RATIO_JA=$(echo "$RATIO_JA * 100" | bc)
+
+    NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "2" ]; then
+            PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
+        fi
+    done
+
+    OPERACION="$PARTIDAS_GANADAS_JB/$NUMERO_PARTIDAS_JB"
+    RATIO_JB=$(echo "scale=2; $OPERACION" | bc)
+    RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
+
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
+            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
+            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "3" ]; then
+            PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
+        fi
+    done
+    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
+        RATIO_JC=0
+    else
+        OPERACION="$PARTIDAS_GANADAS_JC/$NUMERO_PARTIDAS_JC"
+        RATIO_JC=$(echo "scale=2; $OPERACION" | bc)
+        RATIO_JC=$(echo "$RATIO_JC * 100" | bc)
+    fi
+
+    for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
+        NUMERO_PARTIDAS_JD=$((NUMERO_PARTIDAS_JD+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "4" ]; then
+            PARTIDAS_GANADAS_JD=$((PARTIDAS_GANADAS_JD+1))
+        fi
+    done
+    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
+        RATIO_JD=0
+    else
+        OPERACION="$PARTIDAS_GANADAS_JD/$NUMERO_PARTIDAS_JD"
+        RATIO_JD=$(echo "scale=2; $OPERACION" | bc)
+        RATIO_JD=$(echo "$RATIO_JD * 100" | bc)
+    fi
+
+    # Ahora quitamos los decimales a los porcentajes
+    RATIO_JA=${RATIO_JA%.*}
+    RATIO_JB=${RATIO_JB%.*}
+    RATIO_JC=${RATIO_JC%.*}
+    RATIO_JD=${RATIO_JD%.*}
+
+    # Mostramos las estadisticas
+    clear
+    echo""
+    echo "     ********************************************************************************************"
+    echo "     *                                                                                          *"
+    echo "     *          ESTADÍSTICAS                                                                    *"
+    echo "     *                                                                                          *"
+    echo "     *                                                                                          *"
+    if (($NUMERO_PARTIDAS>99)); then
+        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                 *"
+    else if (($NUMERO_PARTIDAS>9)); then
+        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                  *"
+    else
+        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                   *"
+    fi
+    fi
+    echo "     *                                                                                          *"
+    if [ "$(echo "$TIEMPO_MEDIO > 99" | bc -l)" -eq 1 ]; then
+        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                 *"
+    else if [ "$(echo "$TIEMPO_MEDIO > 9" | bc -l)" -eq 1 ]; then
+        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                  *"
+    else
+        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                   *"
+    fi
+    fi
+    echo "     *                                                                                          *"
+    if (($TIEMPO_TOTAL>9999)); then
+        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                        *"
+    else if (($TIEMPO_TOTAL>999)); then
+        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                         *"
+    else if (($TIEMPO_TOTAL>99)); then
+        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                          *"
+    else if (($TIEMPO_TOTAL>9)); then
+        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                           *"
+    else
+        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                            *"
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                          *"
+    if [ "$(echo "$PUNTOS_MEDIOS > 99" | bc -l)" -eq 1 ]; then
+        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)   *"
+    else if [ "$(echo "$PUNTOS_MEDIOS > 9" | bc -l)" -eq 1 ]; then
+        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)    *"
+    else
+        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)     *"
+    fi
+    fi
+    echo "     *                                                                                          *"
+    echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR A: $RATIO_JA%                                  *"
+    echo "     *                                                                                          *"
+    echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR B: $RATIO_JB%                                  *"
+    echo "     *                                                                                          *"
+    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
+        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: No ha jugado ninguna partida         *"
+    else
+        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: $RATIO_JC%                                  *"
+    fi
+    echo "     *                                                                                          *"
+    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
+        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: No ha jugado ninguna partida         *"
+    else
+        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: $RATIO_JD%                                  *"
+    fi
+    echo "     *                                                                                          *"
+    echo "     ********************************************************************************************"
+    echo""
+}
 
 
 #############################
@@ -1453,18 +1623,17 @@ main() {
                 ;;
             J|j)
                 echo "JUGAR"
-                TIEMPOINICIO=$(date +"%S")
+                TIEMPOINICIO=$SECONDS
                 jugarPrincipal
                 JGANADORMAIN=$?
-                TIEMPOFINAL=$(date +"%S")
+                TIEMPOFINAL=$SECONDS
                 guardarLog $JGANADORMAIN
                 ;;
             E|e)
-                echo "ESTADISTICAS"
+                clear
                 mostrarEstadisticas
                 ;;
             F|f)
-                echo "CLASIFICACION"
                 clear
                 mostrarClasificacion
                 ;;
