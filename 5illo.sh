@@ -191,16 +191,20 @@ mostrarEstadisticas() {
     NUMERO_PARTIDAS_JB=$NUMERO_PARTIDAS
     for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "2" ]; then
-        PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
+            PARTIDAS_GANADAS_JB=$((PARTIDAS_GANADAS_JB+1))
         fi
     done
+
     OPERACION="$PARTIDAS_GANADAS_JB/$NUMERO_PARTIDAS_JB"
     RATIO_JB=$(echo "scale=2; $OPERACION" | bc)
     RATIO_JB=$(echo "$RATIO_JB * 100" | bc)
 
     for ((np=0 ; np < $NUMERO_PARTIDAS ; np++)); do
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "3" ]; then
-        NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
+            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
+        fi
+        if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 3)" == "4" ]; then
+            NUMERO_PARTIDAS_JC=$((NUMERO_PARTIDAS_JC+1))
         fi
         if [ "$(sed -n "$((np+1))p" "$LINEALOGS" | cut -d "|" -f 6)" == "3" ]; then
             PARTIDAS_GANADAS_JC=$((PARTIDAS_GANADAS_JC+1))
