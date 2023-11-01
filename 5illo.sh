@@ -1027,6 +1027,14 @@ estrategia2(){
         fi
     done
 
+    # Comprobamos si el jugador puede jugar
+    puedeJugar $JUGADOR_ID_C
+    PUEDEJUGAR=$?
+    if [ $PUEDEJUGAR -eq 1 ]; then
+        # Si el jugador no puede jugar, pasamos al siguiente jugador
+        return 0
+    fi
+
     # Si no hemos podido colocar ninguna carta, colocamos una carta con la estrategia1
     estrategia1 $JUGADOR_ID_C
 }
