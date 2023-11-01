@@ -536,13 +536,45 @@ haGanado() {
 mostrarMesa(){
     
         # Función que muestra la mesa por pantalla
-    
+        # Sustituye los números por las cartas correspondientes (8,9,10) -> (Sota, Caballo, Rey)
+
         # Variables
         PALOSs=("Copas" "Oros" "Espadas" "Bastos")
     
         # Mostramos la mesa por pantalla
         for PALOh in "${PALOSs[@]}"; do
-            echo "$PALOh: ${MESA[PALOh]}"
+            # Obtenemos las cartas del palo
+            CARTAS_PALO=${MESA[PALOh]}
+            CARTAS_PALO_ARRAY=()
+            IFS='|' read -r -a CARTAS_PALO_ARRAY <<< "$CARTAS_PALO"
+
+            echo -n "$PALOh: "
+            
+            # Bucle for para mostrar todas las cartas del palo
+            for ((iMesa = 0; iMesa < ${#CARTAS_PALO_ARRAY[@]}; iMesa++)); do
+                # Obtenemos el número de la carta
+                NUMERO_CARTA=${CARTAS_PALO_ARRAY[iMesa]%% *}
+                # Obtenemos el palo de la carta
+                PALO_CARTA=${CARTAS_PALO_ARRAY[iMesa]##* }
+
+                # Comprobamos si el número de la carta es 8, 9 o 10
+                case $NUMERO_CARTA in
+                    8)
+                        NUMERO_CARTA="Sota"
+                        ;;
+                    9)
+                        NUMERO_CARTA="Caballo"
+                        ;;
+                    10)
+                        NUMERO_CARTA="Rey"
+                        ;;
+                esac
+                # Mostramos la carta
+                echo -n "$NUMERO_CARTA de $PALO_CARTA|"
+            done
+
+            echo ""
+
         done
 }
 
@@ -1031,7 +1063,7 @@ mostrarJugadores(){
     CARTAS_JUGADOR_MOSTRAR_ARRAY=()
 
     # Bucle para mostrar los jugadores
-
+    echo ""
     for ((iMostrar = 0; iMostrar < ${#JUGADORES[@]}; iMostrar++)); do
         JUGADOR_ID_MOSTRAR=$iMostrar
         CARTAS_JUGADOR_MOSTRAR=${JUGADORES[JUGADOR_ID_MOSTRAR]}
@@ -1065,6 +1097,7 @@ mostrarJugadores(){
         echo ""
 
     done
+    echo ""
 
 
 }
