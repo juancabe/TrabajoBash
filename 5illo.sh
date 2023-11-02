@@ -83,8 +83,9 @@ setPermisosConfigLog(){
 
     # Función que establece los permisos de lectura y escritura en 700 para el archivo de configuración y el archivo de logs
 
-    chmod 700 "$CONFIG_FILE"
-    chmod 700 "$LINEALOGS"
+    chmod 600 "$CONFIG_FILE"
+    chmod 600 "$LINEALOGS"
+    clear
 
 }
 
@@ -241,6 +242,7 @@ opcionConfiguracion(){
             C|c)
                 echo "CONFIGURAR LOGS"
                 configurarLogs
+                setPermisosConfigLog
                 ;;
             S|s)
                 echo "SALIR"
