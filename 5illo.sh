@@ -1755,9 +1755,13 @@ main() {
                 JGANADORMAIN=$?
                 TIEMPOFINAL=$SECONDS
                 guardarLog $JGANADORMAIN
-                clear
-                read -p "Pulse INTRO para continuar..."
-                mostrarVictoria $JGANADORMAIN
+                if [ $JGANADORMAIN -eq 0 ]; then
+                    clear
+                    mostrarVictoria $JGANADORMAIN
+                else
+                    read -p "Pulse INTRO para continuar..."
+                    mostrarVictoria $JGANADORMAIN
+                fi
                 ;;
             E|e)
                 clear
