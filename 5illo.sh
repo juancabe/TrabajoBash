@@ -1667,12 +1667,21 @@ mostrarEstadisticas() {
     echo "     *                                                                                          *"
     printf "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: %-5.2f punto(s)    *\n" "$PUNTOS_MEDIOS_REPLACE"
     echo "     *                                                                                          *"
-    echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR A: $RATIO_JA%                                  *"
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR A: %-3i%%                                 *\n" "$RATIO_JA"
     echo "     *                                                                                          *"
-    echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR B: $RATIO_JB%                                  *"
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR B: %-3i%%                                 *\n" "$RATIO_JB"
     echo "     *                                                                                          *"
-    printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: %-2i%%                                  *\n" "$RATIO_JC"
-    printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: %2i%%                                  *\n" "$RATIO_JD"
+    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: No ha jugado ninguna partida         *\n" "$RATIO_JC"
+    else
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: %-3i%%                                 *\n" "$RATIO_JC"
+    fi
+    echo "     *                                                                                          *"
+    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: No ha jugado ninguna partida         *\n" "$RATIO_JD"
+    else
+        printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: %-2i%%                                  *\n" "$RATIO_JD"
+    fi
     echo "     *                                                                                          *"
     echo "     ********************************************************************************************"
     echo""
