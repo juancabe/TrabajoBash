@@ -39,6 +39,8 @@ compruebaConfig() {
     then
         echo "No existe el fichero de configuración"
         exit 1
+    else
+        chmod 600 "$CONFIG_FILE"
     fi
 
     LINEAJUGADORES=$(grep "JUGADORES=" < "$CONFIG_FILE" | cut -d "=" -f 2)
@@ -232,7 +234,7 @@ opcionConfiguracion(){
             C|c)
                 echo "CONFIGURAR LOGS"
                 configurarLogs
-                setPermisosConfigLog
+                chmod 600 "$LINEALOGS"
                 ;;
             S|s)
                 echo "SALIR"
@@ -244,16 +246,6 @@ opcionConfiguracion(){
         esac
         read -p "Pulse INTRO para continuar..."
     done
-}
-
-setPermisosConfigLog(){
-
-    # Función que establece los permisos de lectura y escritura en 700 para el archivo de configuración y el archivo de logs
-
-    chmod 600 "$LINEALOGS"
-    chmod 600 "$CONFIG_FILE"
-    clear
-
 }
 
 
@@ -1710,7 +1702,7 @@ main() {
 
     # Comprobamos que el fichero de configuración sea válido
     compruebaConfig
-    setPermisosConfigLog
+    chmod 600 "$LINEALOGS"
 
     # Variables
     opcion=""
