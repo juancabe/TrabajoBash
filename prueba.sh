@@ -1451,10 +1451,10 @@ main() {
                 for ((wadad=0; wadad < 300; wadad++));do
 
                     echo "JUGAR"
-                    TIEMPOINICIO=$(date +"%S")
+                    TIEMPOINICIO=$SECONDS
                     jugarPrincipal
                     JGANADORMAIN=$?
-                    TIEMPOFINAL=$(date +"%S")
+                    TIEMPOFINAL=$SECONDS
                     guardarLog $JGANADORMAIN
 
                 done

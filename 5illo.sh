@@ -268,7 +268,7 @@ jugarPrincipal(){
 
     crearBaraja
     repartirCartasJugadores
-    mostrarJugadores
+    clear
     bucleJugar
     JGANADOR=$?
     return $JGANADOR
@@ -282,23 +282,20 @@ bucleJugar(){
     HA_GANADO=0
     JUGADOR_INICIO=0
 
+    mostrarAvancePartidaPresentacion
     colocarCincoOrosInicio
     JUGADOR_INICIO=$?   
-     
-
 
     while [ $HA_GANADO -eq 0 ]; do
-
         NUMRONDAS=$((NUMRONDAS+1))
-
         for ((k = $JUGADOR_INICIO; k < $LINEAJUGADORES; k++)); do 
             JUGADOR_INICIO=0
-            echo "Jugador $((k+1))"
-            # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
 
-            #if [ $k -eq 0 ]; then
-            #    jugarIterativo
-            #else
+            # Si le toca al jugador iterativo (que es el 0), llama a la funcion jugarIterativo
+            if [ $k -eq 0 ]; then
+                jugarIterativo
+            else
+                echo ">> Le toca jugar al jugador $((k+1))"
                 case $LINEAESTRATEGIAS in
                     0)
                         estrategia0 $k
@@ -310,14 +307,13 @@ bucleJugar(){
                         estrategia2 $k
                         ;;
                 esac
-            #fi
+            fi
 
             haGanado $k
             HA_GANADO=$?
             if [ $HA_GANADO -eq 1 ]; then
                 return $k
             fi
-
         done
     done
 }
@@ -325,7 +321,6 @@ bucleJugar(){
 jugarIterativo(){
 
     # Función que contiene la lógica de juego del jugador iterativo
-
     CARTAS_JUGADOR=${JUGADORES[0]} # Obtenemos las cartas del Jugador
     CARTAS_JUGADOR_ARRAY=()
     IFS='|' read -r -a CARTAS_JUGADOR_ARRAY <<< "$CARTAS_JUGADOR"
@@ -337,9 +332,26 @@ jugarIterativo(){
     PUEDEJUGAR=$?
     if [ $PUEDEJUGAR -eq 1 ]; then
         # Si el jugador no puede jugar, pasamos al siguiente jugador
-        echo "El jugador 1 no puede jugar"
+        echo ""
+        echo "--"
+        echo ">> Le toca jugar a usted"
+        echo " Usted no puede jugar"
+        echo "--"
+        echo ""
+        read -p "Pulse INTRO para continuar..."
+        echo ""
         return 0
     fi
+
+    # Si podemos jugar, introducimos lo necesario
+    mostrarJugadores
+    mostrarMesa
+    echo ""
+    echo "*************************"
+    echo ""
+    echo ">> Le toca jugar a usted"
+    echo " Para ello, introduzca el número de la carta que quiere colocar:"
+    echo ""
 
 
     # Bucle que imprime las cartas del jugador y pide la carta que se quiere colocar
@@ -348,12 +360,27 @@ jugarIterativo(){
         # Bucle for para mostrar todas las cartas del jugador
 
         for ((i = 0; i < ${#CARTAS_JUGADOR_ARRAY[@]}; i++)); do
-            echo "$i) ${CARTAS_JUGADOR_ARRAY[i]}"
+            
+            # Sustituimos el número de la carta
+            # para ello, recuperamos el número de la carta
+            NUMERO_CARTA_IMPRIMIR=${CARTAS_JUGADOR_ARRAY[i]%% *}
+            case $NUMERO_CARTA_IMPRIMIR in
+                8)
+                    NUMERO_CARTA_IMPRIMIR="Sota"
+                    ;;
+                9)
+                    NUMERO_CARTA_IMPRIMIR="Caballo"
+                    ;;
+                10)
+                    NUMERO_CARTA_IMPRIMIR="Rey"
+                    ;;
+            esac
+            echo "$i) $NUMERO_CARTA_IMPRIMIR de ${CARTAS_JUGADOR_ARRAY[i]##* }"
         done
 
         # Pedimos la carta que queremos colocar
-
-        read -p "Introduzca el número de la carta que quiere colocar: " CARTA
+        echo ""
+        read -p ">> " CARTA
 
         # Verificar si lo introducido es un número usando una expresión regular
         if ! [[ $CARTA =~ ^[0-9]{1,2}$ ]]; then
@@ -361,9 +388,7 @@ jugarIterativo(){
             continue
         fi
 
-
         # Comprobamos que la carta sea válida
-
         if [ $CARTA -lt 0 ] || [ $CARTA -gt $((${#CARTAS_JUGADOR_ARRAY[@]}-1)) ]; then
             echo "La carta no es válida"
             continue
@@ -371,7 +396,9 @@ jugarIterativo(){
             sePuedeColocar ${CARTAS_JUGADOR_ARRAY[CARTA]%% *} ${CARTAS_JUGADOR_ARRAY[CARTA]##* }
             if [ $? -eq 0 ]; then
                 # Si se puede colocar, colocamos la carta en la mesa
-                colocarCarta ${CARTAS_JUGADOR_ARRAY[CARTA]} ${CARTAS_JUGADOR_ARRAY[CARTA]##* }
+                echo ""
+                echo ""
+                colocarCarta ${CARTAS_JUGADOR_ARRAY[CARTA]} 0
 
                 BIENCOLOCADA=1
             else
@@ -381,6 +408,9 @@ jugarIterativo(){
         fi
 
     done
+
+    # Mostramos el avance de la partida (presentación)
+    mostrarAvancePartidaPresentacion
 }
 
 haGanado() {
@@ -407,6 +437,13 @@ mostrarMesa(){
 
         # Variables
         PALOSs=("Copas" "Oros" "Espadas" "Bastos")
+
+        # Hacemos un cuadro de presentación
+        echo ""
+        echo "*******************************"
+        echo "*  CARTAS PUESTAS EN LA MESA  *"
+        echo "*******************************"
+        echo ""
     
         # Mostramos la mesa por pantalla
         for PALOh in "${PALOSs[@]}"; do
@@ -439,9 +476,7 @@ mostrarMesa(){
                 # Mostramos la carta
                 echo -n "$NUMERO_CARTA de $PALO_CARTA|"
             done
-
             echo ""
-
         done
 }
 
@@ -464,23 +499,22 @@ colocarCincoOrosInicio(){
     done
 
     # Eliminar la carta del jugador que empieza
-
     JUGADORES[JUGADOR_ID]=$(echo ${JUGADORES[JUGADOR_ID]} | sed "s/$CARTA_BUSCADA|//g")
 
+    # Decimos que jugador tenía el 5 de Oros
+    echo ">> El jugador $((JUGADOR_ID+1)) tenía el 5 de Oros por lo que ya ha jugado y lo ha colocado"
+
     # Colocar la carta en la mesa
+    colocarCarta $CARTA_BUSCADA $JUGADOR_ID
 
-    colocarCarta $CARTA_BUSCADA
-
-
-    # Devolver el ID del jugador que empieza
-    # Hay que ver si somos el último jugador, en ese caso el jugador que empieza es el jugador 0
-
+    # Hay que ver si el jugador que tenía el 5 de Oros era el último, si es así, el jugador que empieza es el primero
     if [ $JUGADOR_ID -eq $((LINEAJUGADORES-1)) ]; then
         JUGADOR_ID=0
     else
         JUGADOR_ID=$((JUGADOR_ID+1))
     fi
 
+    # Devolver el ID del jugador que empieza
     return $JUGADOR_ID 
 }
 
@@ -491,31 +525,29 @@ colocarCarta(){
     # Variables
     CARTAa=$1
     PALOoo=$2
+    JUGADOR_ID_COL=$3
 
     # Colocamos la cartaa en la MESA, hay que colocarla en orden y en su palooo correspondiente
     # Comprobamos si hay cartaas en el palooo
     LENGTH=${#MESA[PALOoo]}
     if [ $LENGTH -eq 0 ]; then
-        # Si no hay cartaas en el palooo, colocamos la cartaa en la primera posición
+        # Si no hay cartas en el palo, colocamos la carta en la primera posición
         MESA[PALOoo]="$CARTAa $PALOoo|"
-            
-        mostrarMesa
 
     else
-        # Si hay cartaas en el palooo, colocamos la cartaa en la posición correspondiente
+        # Si hay cartas en el palo, colocamos la carta en la posición correspondiente
         # Variables
         CARTAaS_PALOoo=${MESA[PALOoo]} # Obtenemos las cartaas del palooo
         CARTAaS_PALOoo_ARRAY=()
         IFS='|' read -r -a CARTAaS_PALOoo_ARRAY <<< "$CARTAaS_PALOoo"
-        COLOCADA=0 # Variable que indica si la cartaa ha sido colocada
-        POSICION=0 # Variable que indica la posición en la que se va a colocar la cartaa
+        COLOCADA=0 # Variable que indica si la carta ha sido colocada
+        POSICION=0 # Variable que indica la posición en la que se va a colocar la carta
 
-
-        # Bucle para colocar la cartaa en la posición correspondiente
+        # Bucle para colocar la carta en la posición correspondiente
         for ((i = 0; i < ${#CARTAaS_PALOoo_ARRAY[@]}; i++)); do
-            # Obtenemos el número de la cartaa
+            # Obtenemos el número de la carta
             NUMERO_CARTAa=${CARTAaS_PALOoo_ARRAY[i]%% *}
-            # Comprobamos si el número de la cartaa es mayor que el número de la cartaa que queremos colocar
+            # Comprobamos si el número de la carta es mayor que el número de la carta que queremos colocar
             if [ $NUMERO_CARTAa -gt "$CARTAa" ]; then
                 # Si el número de la cartaa es mayor, colocamos la cartaa en la primera posición del array CARTAaS_PALOoo_ARRAY
                 CARTAaS_PALOoo_ARRAY=("$CARTAa $PALOoo" "${CARTAaS_PALOoo_ARRAY[@]}")
@@ -524,21 +556,37 @@ colocarCarta(){
             fi
         done
 
-
-        # Comprobamos si la cartaa ha sido colocada
+        # Comprobamos si la carta ha sido colocada
         if [ $COLOCADA -eq 0 ]; then
-            # Si la cartaa no ha sido colocada, la colocamos en la última posición
+            # Si la carta no ha sido colocada, la colocamos en la última posición
             CARTAaS_PALOoo_ARRAY+=("$CARTAa $PALOoo")
         fi
 
         # Pasamos el array CARTAaS_PALOoo_ARRAY a un string de la forma "4 Oros|5 Oros|6 Oros|"
-        MESA[PALOoo]=$(printf "%s|" "${CARTAaS_PALOoo_ARRAY[@]}")
-
-        mostrarMesa
-        
+        MESA[PALOoo]=$(printf "%s|" "${CARTAaS_PALOoo_ARRAY[@]}")        
     fi
 
     eliminarCartaDeJugador $CARTAa $PALOoo
+
+    # Pequeño mensaje de la acción realizada (Si es el 5 de oros, o acaba de jugar el J0
+    # no se muestra nada y si es la sota, caballo o rey, la frase se adapta)
+    if [ $NUMRONDAS -eq 0 ]; then
+        true
+    else if [ $JUGADOR_ID_COL -eq 0 ]; then
+        true
+    else if [ $CARTAa -eq 8 ]; then
+        echo " Este último coloca la Sota de $PALOoo en la mesa"
+    else if [ $CARTAa -eq 9 ]; then
+        echo " Este último coloca el Caballo de $PALOoo en la mesa"
+    else if [ $CARTAa -eq 10 ]; then
+        echo " Este último coloca el Rey de $PALOoo en la mesa"
+    else
+        echo " Este último coloca el $CARTAa de $PALOoo en la mesa"
+    fi
+    fi
+    fi
+    fi
+    fi
 }
 
 eliminarCartaDeJugador(){
@@ -557,8 +605,6 @@ eliminarCartaDeJugador(){
             break
         fi
     done
-
-    mostrarJugadores
 }
 
 sePuedeColocar(){
@@ -662,8 +708,8 @@ estrategia0(){
     PUEDEJUGAR=$?
     if [ $PUEDEJUGAR -eq 1 ]; then
         # Si el jugador no puede jugar, pasamos al siguiente jugador
-        echo "El jugador $((JUGADOR_ID_A+1)) no puede jugar"
-        return 0
+        echo " Este último no puede jugar"
+        return 1
     fi
 
     # Recorremos las cartas del jugador e intentamos colocarlas en la mesa
@@ -677,7 +723,7 @@ estrategia0(){
         sePuedeColocar $NUMERO_CARTA_est0 $PALO_CARTA_est0
         if [ $? -eq 0 ]; then
             # Si se puede colocar, colocamos la carta en la mesa
-            colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0
+            colocarCarta $NUMERO_CARTA_est0 $PALO_CARTA_est0 $JUGADOR_ID_A
             break
         fi
     done
@@ -700,8 +746,8 @@ estrategia1(){
     PUEDEJUGAR=$?
     if [ $PUEDEJUGAR -eq 1 ]; then
         # Si el jugador no puede jugar, pasamos al siguiente jugador
-        echo "El jugador $((JUGADOR_ID_B+1)) no puede jugar"
-        return 0
+        echo " Este último no puede jugar"
+        return 1
     fi
 
     # Bucle en el cual buscamos cartas de las cuales tenemos la siguiente, excepto los cincos
@@ -727,7 +773,7 @@ estrategia1(){
 
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1+1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
-                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1 $JUGADOR_ID_B
                     break
                 fi
 
@@ -738,7 +784,7 @@ estrategia1(){
 
                 if [[ "$CARTAS_JUGADOR_est1" == *"$((NUMERO_CARTA_est1-1)) $PALO_CARTA_est1"* ]]; then
                     # Si tenemos la siguiente carta, la colocamos
-                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1
+                    colocarCarta $NUMERO_CARTA_est1 $PALO_CARTA_est1 $JUGADOR_ID_B
                     break
                 fi
 
@@ -747,7 +793,6 @@ estrategia1(){
     done
 
     # Si no hemos podido colocar ninguna carta, colocamos una carta aleatoria
-
     if [ $ii -eq ${#CARTAS_JUGADOR_est1_ARRAY[@]} ]; then
         estrategia0 $JUGADOR_ID_B
         return $?
@@ -778,8 +823,8 @@ estrategia2(){
     PUEDEJUGAR=$?
     if [ $PUEDEJUGAR -eq 1 ]; then
         # Si el jugador no puede jugar, pasamos al siguiente jugador
-        echo "El jugador $((JUGADOR_ID_C+1)) no puede jugar"
-        return 0
+        echo " Este último no puede jugar"
+        return 1
     fi
 
     for ((e=0 ; e < ${#CARTAS_JUGADOR_est2_ARRAY[@]} ; e++)); do
@@ -791,14 +836,14 @@ estrategia2(){
         if [ $NUMERO_CARTA_e -eq 10 ]; then
             sePuedeColocar $NUMERO_CARTA_e $PALO_CARTA_e
             if [ $? -eq 0 ]; then
-                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
-                break
+                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e $JUGADOR_ID_C
+                return 0
             fi
         else if [ $NUMERO_CARTA_e -eq 1 ]; then
             sePuedeColocar $NUMERO_CARTA_e $PALO_CARTA_e
             if [ $? -eq 0 ]; then
-                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
-                break
+                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e $JUGADOR_ID_C
+                return 0
             fi
         fi
         fi
@@ -840,7 +885,7 @@ estrategia2(){
                             fi
 
                             if [ $CARTAS_DISPONIBLES -eq 1 ]; then
-                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e $JUGADOR_ID_C
                                 return 0
                             else
                                 continue
@@ -858,7 +903,7 @@ estrategia2(){
                             fi
 
                             if [ $CARTAS_DISPONIBLES -eq 0 ]; then
-                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e $JUGADOR_ID_C
                                 return 0
                             else
                                 continue
@@ -876,7 +921,7 @@ estrategia2(){
                             fi
 
                             if [ $CARTAS_DISPONIBLES -eq 0 ]; then
-                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e
+                                colocarCarta $NUMERO_CARTA_e $PALO_CARTA_e $JUGADOR_ID_C
                                 return 0
                             else
                                 continue
@@ -887,14 +932,6 @@ estrategia2(){
             done
         fi
     done
-
-    # Comprobamos si el jugador puede jugar
-    puedeJugar $JUGADOR_ID_C
-    PUEDEJUGAR=$?
-    if [ $PUEDEJUGAR -eq 1 ]; then
-        # Si el jugador no puede jugar, pasamos al siguiente jugador
-        return 0
-    fi
 
     # Si no hemos podido colocar ninguna carta, colocamos una carta con la estrategia1
     estrategia1 $JUGADOR_ID_C
@@ -929,8 +966,14 @@ mostrarJugadores(){
     CARTAS_JUGADOR_MOSTRAR=""
     CARTAS_JUGADOR_MOSTRAR_ARRAY=()
 
-    # Bucle para mostrar los jugadores
+    # Pequeño bloque de presentación
     echo ""
+    echo "*****************************"
+    echo "*  CARTAS DE LOS JUGADORES  *"
+    echo "*****************************"
+    echo ""
+
+    # Bucle para mostrar los jugadores
     for ((iMostrar = 0; iMostrar < ${#JUGADORES[@]}; iMostrar++)); do
         JUGADOR_ID_MOSTRAR=$iMostrar
         CARTAS_JUGADOR_MOSTRAR=${JUGADORES[JUGADOR_ID_MOSTRAR]}
@@ -938,7 +981,7 @@ mostrarJugadores(){
         IFS='|' read -r -a CARTAS_JUGADOR_MOSTRAR_ARRAY <<< "$CARTAS_JUGADOR_MOSTRAR"
 
         # Mostramos el jugador
-        echo -n "Jugador $((JUGADOR_ID_MOSTRAR+1)):"
+        echo -n "-JUGADOR $((JUGADOR_ID_MOSTRAR+1)):"
 
         # Bucle para sustituir los 8,9,10 por sota, caballo, rey; respectivamente.
         for ((jMostrar = 0; jMostrar < ${#CARTAS_JUGADOR_MOSTRAR_ARRAY[@]}; jMostrar++)); do
@@ -958,12 +1001,22 @@ mostrarJugadores(){
                     NUMERO_CARTA_MOSTRAR="Rey"
                     ;;
             esac
-            # Mostramos la carta seguida de |
-            echo -n "$NUMERO_CARTA_MOSTRAR de $PALO_CARTA|"
+            # Mostramos la carta seguida de -
+            echo -n " $NUMERO_CARTA_MOSTRAR de $PALO_CARTA -"
         done
+        echo ""
         echo ""
 
     done
+}
+
+mostrarAvancePartidaPresentacion(){
+
+    # Mostramos un pequeño bloque de avance de la partida
+    clear
+    echo "*************************"
+    echo "*  JUGADAS AUTOMÁTICAS  *"
+    echo "*************************"
     echo ""
 }
 
@@ -1039,6 +1092,80 @@ guardarLog() {
             echo "$FECHA|$HORA|$LINEAJUGADORES|$TIEMPOTOTAL|$NUMRONDAS|$((GANADOR+1))|$TOTAL_CARTAS_RESTANTES|${NUMCARTASJUGADORES[0]}-${NUMCARTASJUGADORES[1]}-${NUMCARTASJUGADORES[2]}-${NUMCARTASJUGADORES[3]}" >> "$LINEALOGS"
             ;;
     esac
+}
+
+mostrarVictoria() {
+
+    # Variables
+    GANADOR=$1
+
+    # Mostramos el ganador
+    clear
+    for ((gana=0 ; gana < 5000 ; gana++)); do
+        echo "    #                      #                      #                      #"
+        echo "     #                      #                      #                      #"
+        echo "      #                      #                      #                      #"
+        echo "       #                      #                      #                      #"
+        echo "        #          #           #           #          #          #           #"
+        echo "         #          #           #           #          #          #           #"
+        echo "          #          #           #           #          #          #           #"
+        echo "           #          #           #           #          #          #           #"
+        echo "            #          #           #           #          #          #           #"
+        echo "             #          #           #           #          #          #           #"
+        echo "            #          #           #           #          #          #           #"
+        echo "           #          #           #           #          #          #           #"
+        echo "          #          #           #           #          #          #           #"
+        echo "         #          #           #           #          #          #           #"
+        echo "        #          #           #           #          #          #           #"
+        echo "       #                      #                      #                      #"
+        echo "      #                      #                      #                      #"
+        echo "     #                      #                      #                      #"
+        echo "    #                      #                      #                      #"
+    done
+    echo ""
+    echo ""
+    echo "     #####  #####  #      #####  #####  #####  ####   #####  ####   #####  #####     "
+    echo "     #      #      #        #    #        #    #   #  #   #  #   #  #      #         "
+    echo "     #####  #####  #        #    #        #    #   #  #####  #   #  #####  #####     "
+    echo "     #      #      #        #    #        #    #   #  #   #  #   #  #          #     "
+    echo "     #      #####  #####  #####  #####    #    ####   #   #  ####   #####  #####     "
+    echo ""
+    if [ $GANADOR -eq 0 ]; then
+        echo "                                    #####  ###                                       "
+        echo "                                      #      #                                       "
+        echo "                                      #      #                                       "
+        echo "                                      #      #                                       "
+        echo "                                    ###    #####                                     "
+    else if [ $GANADOR -eq 1 ]; then
+        echo "                                    #####  #####                                     "
+        echo "                                      #        #                                     "
+        echo "                                      #    #####                                     "
+        echo "                                      #    #                                         "
+        echo "                                    ###    #####                                     "
+    else if [ $GANADOR -eq 2 ]; then
+        echo "                                    #####  #####                                     "
+        echo "                                      #        #                                     "
+        echo "                                      #    #####                                     "
+        echo "                                      #        #                                     "
+        echo "                                    ###    #####                                     "
+    else
+        echo "                                    #####  #   #                                     "
+        echo "                                      #    #   #                                     "
+        echo "                                      #    #####                                     "
+        echo "                                      #        #                                     "
+        echo "                                    ###        #                                     "
+    fi
+    fi
+    fi
+    echo ""
+    echo "     #     #   #  #####  #####    #####  #####  #   #  #####  ####   #####     #     "
+    echo "           #   #  #   #  #        #      #   #  ##  #  #   #  #   #  #   #     #     "
+    echo "     #     #####  #####  #####    #####  #####  # # #  #####  #   #  #   #     #     "
+    echo "     #     #   #  #   #      #    #   #  #   #  #  ##  #   #  #   #  #   #           "
+    echo "     #     #   #  #   #  #####    #####  #   #  #   #  #   #  ####   #####     #     "
+    echo ""
+    echo ""
+    echo ""
 }
 
 
@@ -1628,6 +1755,9 @@ main() {
                 JGANADORMAIN=$?
                 TIEMPOFINAL=$SECONDS
                 guardarLog $JGANADORMAIN
+                clear
+                read -p "Pulse INTRO para continuar..."
+                mostrarVictoria $JGANADORMAIN
                 ;;
             E|e)
                 clear
