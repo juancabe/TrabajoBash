@@ -79,16 +79,6 @@ compruebaConfig() {
     fi
 }
 
-setPermisosConfigLog(){
-
-    # Función que establece los permisos de lectura y escritura en 700 para el archivo de configuración y el archivo de logs
-
-    chmod 600 "$CONFIG_FILE"
-    chmod 600 "$LINEALOGS"
-    clear
-
-}
-
 mostrarDatosTrabajo() {
 
     clear
@@ -254,6 +244,16 @@ opcionConfiguracion(){
         esac
         read -p "Pulse INTRO para continuar..."
     done
+}
+
+setPermisosConfigLog(){
+
+    # Función que establece los permisos de lectura y escritura en 700 para el archivo de configuración y el archivo de logs
+
+    chmod 600 "$LINEALOGS"
+    chmod 600 "$CONFIG_FILE"
+    clear
+
 }
 
 
@@ -1186,7 +1186,207 @@ mostrarVictoria() {
 #                           #
 #############################
 
-setPermisosConfigLog
+
+mostrarClasificacion(){
+
+    # Función para mostrar la clasificación
+
+    # Variables
+    NUMERO_PARTIDAS=$(wc -l < "$LINEALOGS")
+    # Datos de la partida más corta
+    INDICE_PARTIDA_MAS_CORTA=0
+    # Datos de la partida más larga
+    INDICE_PARTIDA_MAS_LARGA=0
+    # Datos de la partida con más rondas
+    INDICE_PARTIDA_CON_MAS_RONDAS=0
+    # Datos de la partida con menos rondas
+    INDICE_PARTIDA_CON_MENOS_RONDAS=0
+    # Datos de la partida con mayor número de puntos obtenidos por el ganador
+    INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=0
+    # Datos de la partida en la que un jugador se ha quedado con mayor número de cartas
+    INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=0
+    
+    # Comprobamos si hay partidas jugadas
+    if (( $NUMERO_PARTIDAS == 0 )); then
+        echo "No hay partidas jugadas"
+        return 0
+    fi
+
+    # Por si tarda mucho, imprimimos un mensaje
+    echo "Calculando la clasificación con $NUMERO_PARTIDAS partidas..."
+
+    # Obtenemos los indices de las partidas
+    obtenerIndicePartidaMasCorta
+    INDICE_PARTIDA_MAS_CORTA=$?
+
+    obtenerIndicePartidaMasLarga
+    INDICE_PARTIDA_MAS_LARGA=$?
+
+    obtenerIndicePartidaConMasRondas
+    INDICE_PARTIDA_CON_MAS_RONDAS=$?
+
+    obtenerIndicePartidaConMenosRondas
+    INDICE_PARTIDA_CON_MENOS_RONDAS=$?
+
+    obtenerIndicePartidaConMayorNumeroPuntosObtenidosPorElGanador
+    INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR=$?
+
+    obtenerIndicePartidaEnLaQueUnJugadorSeHaQuedadoConMayorNumeroDeCartas
+    INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS=$?
+
+    # Mostramos los indices primero para debug
+
+
+    # Mostramos la clasificación
+    clear
+    echo""
+    echo "     ****************************************************************************************************************************"
+    echo "     *                                                                                                                          *"
+    echo "     *          CLASIFICACIÓN                                                                                                   *"
+    echo "     *                                                                                                                          *"
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_MAS_CORTA"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                              *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                             *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                            *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                           *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                         *"
+    else
+        echo "     *    PARTIDA MÁS CORTA: $LINEA_A_IMPRIMIR                                                        *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_MAS_LARGA"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                              *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                             *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                            *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                           *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                         *"
+    else
+        echo "     *    PARTIDA MÁS LARGA: $LINEA_A_IMPRIMIR                                                        *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MAS_RONDAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                         *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                        *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                     *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                    *"
+    else
+        echo "     *    PARTIDA CON MÁS RONDAS: $LINEA_A_IMPRIMIR                                                   *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MENOS_RONDAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                     *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                    *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                   *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                  *"
+    else
+        echo "     *    PARTIDA CON MENOS RONDAS: $LINEA_A_IMPRIMIR                                                 *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_CON_MAYOR_NUMERO_PUNTOS_OBTENIDOS_POR_EL_GANADOR"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                    *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                   *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                  *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                 *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR                *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR               *"
+    else
+        echo "     *    PARTIDA CON MAYOR NÚMERO DE PUNTOS OBTENIDOS POR EL GANADOR: $LINEA_A_IMPRIMIR              *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    LINEA_A_IMPRIMIR=$(sed -n "$INDICE_PARTIDA_EN_LA_QUE_UN_JUGADOR_SE_HA_QUEDADO_CON_MAYOR_NUMERO_DE_CARTAS"p "$LINEALOGS")
+    LENGTH_LINEA_A_IMPRIMIR=${#LINEA_A_IMPRIMIR}
+    if (($LENGTH_LINEA_A_IMPRIMIR == 37)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR          *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 38)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR         *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 39)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR        *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 40)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR       *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 41)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR      *"
+    else if (($LENGTH_LINEA_A_IMPRIMIR == 42)); then
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR     *"
+    else
+        echo "     *    PARTIDA EN LA QUE UN JUGADOR SE HA QUEDADO CON MAYOR NÚMERO DE CARTAS: $LINEA_A_IMPRIMIR    *"
+    fi
+    fi
+    fi
+    fi
+    fi
+    fi
+    echo "     *                                                                                                                          *"
+    echo "     ****************************************************************************************************************************"
+    echo""
+}
+
 
 obtenerIndicePartidaMasCorta(){
 
