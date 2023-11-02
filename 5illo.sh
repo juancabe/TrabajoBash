@@ -117,7 +117,7 @@ mostrarDatosTrabajo() {
     echo "     *    uno, dos) y no las intermedias (tres, cuatro, seis y siete)         *"
     echo "     *    si es así, colocan el 5, ya que van a necesitar que los demás       *"
     echo "     *    coloquen cartas intermedias para poder colocar las suyas.           *"
-    echo "     *    si tienen esas cartas intermedias, no colocan el 5.                 *"
+    echo "     *    Si tienen esas cartas intermedias, no colocan el 5.                 *"
     echo "     *    En caso de no tener un 5, aplican la estrategia 1.                  *"
     echo "     *                                                                        *"
     echo "     **************************************************************************"
@@ -1761,7 +1761,7 @@ main() {
 
 if [ ! -z $2 ]
 then
-    echo "No se admiten más de un argumento"
+    echo "No se admite más de un argumento"
     exit 1
 fi
 if [ -z $1 ]
