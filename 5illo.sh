@@ -1101,7 +1101,7 @@ mostrarVictoria() {
 
     # Mostramos el ganador
     clear
-    for ((gana=0 ; gana < 5000 ; gana++)); do
+    for ((gana=0 ; gana < 50 ; gana++)); do
         echo "    #                      #                      #                      #"
         echo "     #                      #                      #                      #"
         echo "      #                      #                      #                      #"
@@ -1649,69 +1649,30 @@ mostrarEstadisticas() {
 
     # Mostramos las estadisticas
     clear
+    TIEMPO_MEDIO_REPLACE=${TIEMPO_MEDIO/./,}
+    PUNTOS_MEDIOS_REPLACE=${PUNTOS_MEDIOS/./,}
+
+
     echo""
     echo "     ********************************************************************************************"
     echo "     *                                                                                          *"
     echo "     *          ESTADÍSTICAS                                                                    *"
     echo "     *                                                                                          *"
     echo "     *                                                                                          *"
-    if (($NUMERO_PARTIDAS>99)); then
-        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                 *"
-    else if (($NUMERO_PARTIDAS>9)); then
-        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                  *"
-    else
-        echo "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: $NUMERO_PARTIDAS                                                   *"
-    fi
-    fi
+    printf "     *    NÚMERO TOTAL DE PARTIDAS JUGADAS: %-7i                                             *\n" "$NUMERO_PARTIDAS"
     echo "     *                                                                                          *"
-    if [ "$(echo "$TIEMPO_MEDIO > 99" | bc -l)" -eq 1 ]; then
-        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                 *"
-    else if [ "$(echo "$TIEMPO_MEDIO > 9" | bc -l)" -eq 1 ]; then
-        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                  *"
-    else
-        echo "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: $TIEMPO_MEDIO segundo(s)                   *"
-    fi
-    fi
+    printf "     *    MEDIA DE LOS TIEMPOS DE TODAS LAS PARTIDAS JUGADAS: %-19.2f segundo(s)    *\n" "$TIEMPO_MEDIO_REPLACE"
     echo "     *                                                                                          *"
-    if (($TIEMPO_TOTAL>9999)); then
-        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                        *"
-    else if (($TIEMPO_TOTAL>999)); then
-        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                         *"
-    else if (($TIEMPO_TOTAL>99)); then
-        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                          *"
-    else if (($TIEMPO_TOTAL>9)); then
-        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                           *"
-    else
-        echo "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: $TIEMPO_TOTAL segundo(s)                            *"
-    fi
-    fi
-    fi
-    fi
+    printf "     *    TIEMPO TOTAL INVERTIDO EN TODAS LAS PARTIDAS: %-25i segundo(s)    *\n" "$TIEMPO_TOTAL"
     echo "     *                                                                                          *"
-    if [ "$(echo "$PUNTOS_MEDIOS > 99" | bc -l)" -eq 1 ]; then
-        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)   *"
-    else if [ "$(echo "$PUNTOS_MEDIOS > 9" | bc -l)" -eq 1 ]; then
-        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)    *"
-    else
-        echo "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: $PUNTOS_MEDIOS punto(s)     *"
-    fi
-    fi
+    printf "     *    MEDIA DE LOS PUNTOS OBTENIDOS POR EL GANADOR EN TODAS LAS PARTIDAS: %-5.2f punto(s)    *\n" "$PUNTOS_MEDIOS_REPLACE"
     echo "     *                                                                                          *"
     echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR A: $RATIO_JA%                                  *"
     echo "     *                                                                                          *"
     echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR B: $RATIO_JB%                                  *"
     echo "     *                                                                                          *"
-    if [ $NUMERO_PARTIDAS_JC -eq 0 ]; then
-        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: No ha jugado ninguna partida         *"
-    else
-        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: $RATIO_JC%                                  *"
-    fi
-    echo "     *                                                                                          *"
-    if [ $NUMERO_PARTIDAS_JD -eq 0 ]; then
-        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: No ha jugado ninguna partida         *"
-    else
-        echo "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: $RATIO_JD%                                  *"
-    fi
+    printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR C: %-2i%%                                  *\n" "$RATIO_JC"
+    printf "     *    PORCENTAJE DE PARTIDAS GANADAS POR EL JUGADOR D: %2i%%                                  *\n" "$RATIO_JD"
     echo "     *                                                                                          *"
     echo "     ********************************************************************************************"
     echo""
